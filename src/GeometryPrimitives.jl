@@ -3,6 +3,7 @@ module GeometryPrimitives
 using Compat, StaticArrays
 
 abstract Object{N} # a solid geometric object in N dimensions
+Base.ndims{N}(o::Object{N}) = N
 
 export Object, normal, bounds
 
@@ -13,5 +14,7 @@ include("sphere.jl")
 include("box.jl")
 include("ellipsoid.jl")
 include("cylinder.jl")
+
+include("kdtree.jl")
 
 end # module

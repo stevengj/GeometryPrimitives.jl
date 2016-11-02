@@ -23,3 +23,9 @@ c = Cylinder([0,0,0], 0.3, [0,0,1], 2.2)
 @test normal([0.1,0.2,-1.3], c) == [0,0,-1]
 @test normal([0.31, 0, 0.3], c) == [1,0,0]
 @test bounds(c) == ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
+
+o = Object{2}[Sphere([i,0], 1, i) for i in 0:20]
+kd = KDTree(o)
+@test GeometryPrimitives.depth(kd) == 4
+@test get(findin([10.1,0], kd)).data == 10
+@test isnull(findin([10.1,1], kd))
