@@ -6,7 +6,7 @@ randnb(lb::Real,ub::Real) = randn(rng)*(ub-lb) + 0.5*(lb+ub)
 randnb(lb::AbstractVector,ub::AbstractVector) = map(randnb, lb, ub)
 function inbounds(x,lb,ub)
     length(x) == length(lb) == length(lb) || throw(BoundsError())
-    for i = 1:length(x)
+    for i in eachindex(x)
         @inbounds lb[i] ≤ x[i] ≤ ub[i] || return false
     end
     return true
@@ -25,7 +25,7 @@ end
 function checktree{N}(t::KDTree{N}, olist::Vector{Object{N}}, ntrials=10^3)
     lb = SVector{N}(fill(Inf,N))
     ub = SVector{N}(fill(-Inf,N))
-    for i = 1:length(olist)
+    for i in eachindex(olist)
         lbi,ubi = bounds(olist[i])
         lb = min(lb,lbi)
         ub = max(ub,ubi)

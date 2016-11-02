@@ -66,7 +66,7 @@ function KDTree{K}(o::AbstractVector{Object{K}})
     ol = Array{Object{K}}(nl)
     or = Array{Object{K}}(nr)
     il = ir = 0
-    for k = 1:length(o)
+    for k in eachindex(o)
         if b[k][1][ix] ≤ x
             ol[il += 1] = o[k]
         end
@@ -100,7 +100,7 @@ function Base.show{K}(io::IO, ::MIME"text/plain", kd::KDTree{K})
 end
 
 function Base.findin{N}(p::SVector{N}, o::Vector{Object{N}})
-    for i = 1:length(o)
+    for i in eachindex(o)
         if p ∈ o[i]
             return Nullable{Object{N}}(o[i])
         end
