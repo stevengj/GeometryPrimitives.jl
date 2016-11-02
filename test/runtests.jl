@@ -22,6 +22,24 @@ function checkbounds{N}(o::Object{N}, ntrials=10^4)
     return true
 end
 
+function checktree{N}(t::KDTree{N}, olist::Vector{Object{N}}, ntrials=10^3)
+    lb = SVector{N}(fill(Inf,N))
+    ub = SVector{N}(fill(-Inf,N))
+    for i = 1:length(olist)
+        lbi,ubi = bounds(olist[i])
+        lb = min(lb,lbi)
+        ub = max(ub,ubi)
+    end
+    for i = 1:ntrials
+        x = randnb(lb,ub)
+        ot = findin(x, t)
+        ol = findin(x, olist)
+        isnull(ot) == isnull(ol) || return false
+        isnull(ot) || get(ot) == get(ol) || return false
+    end
+    return true
+end
+
 @testset "GeometryPrimitives" begin
 
     @testset "Object" begin
@@ -79,6 +97,11 @@ end
         @test GeometryPrimitives.depth(kd) == 4
         @test get(findin([10.1,0], kd)).data == 10
         @test isnull(findin([10.1,1], kd))
+        @test checktree(kd, o)
+        o = Object{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
+        @test checktree(KDTree(o), o)
+        o = Object{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
+        @test checktree(KDTree(o), o)
     end
 
 end
