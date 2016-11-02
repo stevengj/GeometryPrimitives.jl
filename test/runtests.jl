@@ -1,5 +1,26 @@
 using GeometryPrimitives, StaticArrays, Base.Test
 Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip(a,b))
+const rng = MersenneTwister(0) # test with reproducible pseudorandom numbers
+
+randnb(lb::Real,ub::Real) = randn(rng)*(ub-lb) + 0.5*(lb+ub)
+randnb(lb::AbstractVector,ub::AbstractVector) = map(randnb, lb, ub)
+function inbounds(x,lb,ub)
+    length(x) == length(lb) == length(lb) || throw(BoundsError())
+    for i = 1:length(x)
+        @inbounds lb[i] ≤ x[i] ≤ ub[i] || return false
+    end
+    return true
+end
+
+"check the bounding box of o with randomized trials"
+function checkbounds{N}(o::Object{N}, ntrials=10^4)
+    lb,ub = bounds(o)
+    for i = 1:ntrials
+        x = randnb(lb,ub)
+        x ∉ o || inbounds(x,lb,ub) || return false
+    end
+    return true
+end
 
 @testset "GeometryPrimitives" begin
 
@@ -10,6 +31,8 @@ Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip
             @test [3,9.1] ∉ s
             @test normal([-1,2],s) == normalize([-1,2] - [3,4])
             @test bounds(s) == ([-2,-1],[8,9])
+            @test checkbounds(s)
+            @test checkbounds(Sphere([1,2,3], 2))
         end
 
         @testset "Box" begin
@@ -21,6 +44,20 @@ Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip
             @test normal([1.1,2.01],b) == [0,1]
             @test bounds(b) == ([-1,-2],[1,2])
             @test bounds(Box([0,0], [2,4], [1 1; 1 -1])) ≈ ([-3*√0.5,-3*√0.5], [3*√0.5,3*√0.5])
+            @test checkbounds(b)
+            @test checkbounds(Box([0,0], [2,4], [1 1; 1 -1]))
+        end
+
+        @testset "Ellipsoid" begin
+            e = Ellipsoid([0,0], [2,4])
+            @test [0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e
+            @test [0.3,2*sqrt(1 - 0.3^2)+0.01] ∉ e
+            @test normal([1.1,0],e) == [1,0]
+            @test normal([-1.1,0],e) == [-1,0]
+            @test normal([0,2.01],e) == [0,1]
+            @test bounds(e) == ([-1,-2],[1,2])
+            @test checkbounds(e)
+            @test checkbounds(Ellipsoid([0,0], [2,4], [1 1; 1 -1]))
         end
 
         @testset "Cylinder" begin
@@ -31,6 +68,8 @@ Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip
             @test normal([0.1,0.2,-1.3], c) == [0,0,-1]
             @test normal([0.31, 0, 0.3], c) == [1,0,0]
             @test bounds(c) == ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
+            @test checkbounds(c)
+            @test checkbounds(Cylinder([1,17,44], 0.3, [1,-2,3], 1.1))
         end
     end
 
