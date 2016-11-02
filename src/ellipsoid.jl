@@ -1,6 +1,6 @@
 export Ellipsoid
 
-immutable Ellipsoid{N,D} <: Object{N}
+type Ellipsoid{N,D} <: Object{N}
     c::SVector{N,Float64} # Ellipsoid center
     p::SMatrix{N,N,Float64} # projection matrix to Ellipsoid coordinates
     ri2::SVector{N,Float64} # inverse square of "radius" (semi-axis) in each direction
