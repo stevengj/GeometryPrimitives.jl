@@ -1,9 +1,7 @@
 # GeometryPrimitives
 
 [![Build Status](https://travis-ci.org/stevengj/GeometryPrimitives.jl.svg?branch=master)](https://travis-ci.org/stevengj/GeometryPrimitives.jl)
-
 [![Build status](https://ci.appveyor.com/api/projects/status/gfd4tai84q9kdm88?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/geometryprimitives-jl)
-
 [![codecov.io](http://codecov.io/github/stevengj/GeometryPrimitives.jl/coverage.svg?branch=master)](http://codecov.io/github/stevengj/GeometryPrimitives.jl?branch=master)
 
 This package provides a set of geometric primitive types (spheres, boxes,
