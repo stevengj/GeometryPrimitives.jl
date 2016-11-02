@@ -16,11 +16,12 @@ end
 
 Base.in{N}(x::SVector, b::Ellipsoid{N}) = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 
-normal(x::SVector, b::Ellipsoid) = normalize(b.p' * (b.ri2 .* (b.p * (x - b.c))))
+normal(x::SVector, b::Ellipsoid) = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
 
 function bounds(b::Ellipsoid)
     # this is the bounding box for the axes-aligned box around the ellipsoid,
     # which may be bigger than necessary.  TODO: compute true bounding box
-    a = abs(inv(b.p) * (b.ri2 .^ -0.5))
-    return (b.c-a,b.c+a)
+    A = inv(b.p) .* (b.ri2 .^ -0.5)' # array of scaled axes vectors.
+    m = maximum(A * signmatrix(b), 2)[:,1] # extrema of all 2^N corners of the box
+    return (b.c-m,b.c+m)
 end

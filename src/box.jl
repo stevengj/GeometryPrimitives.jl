@@ -24,11 +24,16 @@ end
 
 function normal{N}(x::SVector, b::Box{N})
     d = b.p * (x - b.c)
-    (m,i) = findmin(abs(abs(d) - b.r))
-    return SVector{N}(b.p[i,1:N]) * sign(d[i])
+    (m,i) = findmin(abs.(abs.(d) - b.r))
+    return SVector{N}(b.p[i,:]) * sign(d[i])
 end
 
+signmatrix(b::Object{1}) = SMatrix{1,2}(1,-1)
+signmatrix(b::Object{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
+signmatrix(b::Object{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
+
 function bounds(b::Box)
-    a = abs(inv(b.p)*b.r)
-    return (b.c-a,b.c+a)
+    A = inv(b.p) .* b.r' # array of scaled axes vectors.
+    m = maximum(A * signmatrix(b), 2)[:,1] # extrema of all 2^N corners of the box
+    return (b.c-m,b.c+m)
 end

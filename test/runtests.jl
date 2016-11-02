@@ -1,4 +1,5 @@
 using GeometryPrimitives, StaticArrays, Base.Test
+Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip(a,b))
 
 s = Sphere([3,4], 5)
 @test [3,9] ∈ s
@@ -13,6 +14,7 @@ b = Box([0,0], [2,4])
 @test normal([-1.1,0],b) == [-1,0]
 @test normal([1.1,2.01],b) == [0,1]
 @test bounds(b) == ([-1,-2],[1,2])
+@test bounds(Box([0,0], [2,4], [1 1; 1 -1])) ≈ ([-3*√0.5,-3*√0.5], [3*√0.5,3*√0.5])
 
 c = Cylinder([0,0,0], 0.3, [0,0,1], 2.2)
 @test [0.2,0.2,1] ∈ c
