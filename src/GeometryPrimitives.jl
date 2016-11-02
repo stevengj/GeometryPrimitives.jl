@@ -1,13 +1,13 @@
 module GeometryPrimitives
 
-using Compat, FixedSizeArrays
+using Compat, StaticArrays
 
 abstract Object{N} # a solid geometric object in N dimensions
 
 export Object, normal, bounds
 
-Base.in(x::AbstractVector, o::Object) = Point(x) in o
-normal(x::AbstractVector, o::Object) = normal(Point(x), o)
+Base.in{N}(x::AbstractVector, o::Object{N}) = SVector{N}(x) in o
+normal{N}(x::AbstractVector, o::Object{N}) = normal(SVector{N}(x), o)
 
 include("sphere.jl")
 include("box.jl")
