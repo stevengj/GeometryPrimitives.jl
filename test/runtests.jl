@@ -45,6 +45,7 @@ end
     @testset "Object" begin
         @testset "Sphere" begin
             s = Sphere([3,4], 5)
+            @test ndims(s) == 2
             @test [3,9] ∈ s
             @test [3,9.1] ∉ s
             @test normal([-1,2],s) == normalize([-1,2] - [3,4])

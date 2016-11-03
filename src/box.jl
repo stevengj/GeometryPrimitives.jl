@@ -14,7 +14,7 @@ function Box(c::AbstractVector, d::AbstractVector,
     return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt(sumabs2(axes,2))), d*0.5, data)
 end
 
-function Base.in{N}(x::SVector, b::Box{N})
+function Base.in{N}(x::SVector{N}, b::Box{N})
     d = b.p * (x - b.c)
     for i = 1:N
         abs(d[i]) > b.r[i] && return false
@@ -22,7 +22,7 @@ function Base.in{N}(x::SVector, b::Box{N})
     return true
 end
 
-function normal{N}(x::SVector, b::Box{N})
+function normal{N}(x::SVector{N}, b::Box{N})
     d = b.p * (x - b.c)
     (m,i) = findmin(abs.(abs.(d) - b.r))
     return SVector{N}(b.p[i,:]) * sign(d[i])

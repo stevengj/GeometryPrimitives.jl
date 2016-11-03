@@ -10,14 +10,14 @@ end
 Cylinder{D}(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data::D=nothing) =
     Cylinder{length(c),D}(c, normalize(a), r, h * 0.5, data)
 
-function Base.in(x::SVector, s::Cylinder)
+function Base.in{N}(x::SVector{N}, s::Cylinder{N})
     d = x - s.c
     p = dot(d, s.a)
     abs(p) > s.h2 && return false
     return sumabs2(d - p*s.a) ≤ s.r^2
 end
 
-function normal(x::SVector, s::Cylinder)
+function normal{N}(x::SVector{N}, s::Cylinder{N})
     d = x - s.c
     p = dot(d, s.a)
     p > s.h2 && return s.a

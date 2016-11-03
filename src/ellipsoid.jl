@@ -14,9 +14,9 @@ function Ellipsoid(c::AbstractVector, d::AbstractVector, axes=eye(length(c),leng
     return Ellipsoid{length(c),typeof(data)}(c, inv(axes ./ sqrt(sumabs2(axes,2))), (d*0.5) .^ -2, data)
 end
 
-Base.in{N}(x::SVector, b::Ellipsoid{N}) = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
+Base.in{N}(x::SVector{N}, b::Ellipsoid{N}) = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 
-normal(x::SVector, b::Ellipsoid) = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
+normal{N}(x::SVector{N}, b::Ellipsoid{N}) = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
 
 function bounds(b::Ellipsoid)
     # this is the bounding box for the axes-aligned box around the ellipsoid,
