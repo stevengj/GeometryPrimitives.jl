@@ -72,7 +72,57 @@ end
 # first bit is set (0,0,0 in p) and ≤ 4 bits are set (≤ 4 corners in p)
 function __boxcut(b::UInt8, p::Plane{3})
     b==0x01 && return boxcut1(s(p,0,1),s(p,0,2),s(p,0,4))
+
     b==0x03 && return boxcut2(s(p,0,2),s(p,0,4),s(p,1,3),s(p,1,5))
     b==0x05 && return boxcut2(s(p,0,1),s(p,0,4),s(p,2,3),s(p,2,6))
     b==0x11 && return boxcut2(s(p,0,1),s(p,0,2),s(p,4,5),s(p,4,6))
+
+    b==0x07 && return boxcut3(s(p,0,4),s(p,1,5),s(p,2,6),s(p,1,3),s(p,2,3))
+    b==0x13 && return boxcut3(s(p,0,2),s(p,4,6),s(p,1,3),s(p,4,5),s(p,1,5))
+    b==0x15 && return boxcut3(s(p,0,1),s(p,2,3),s(p,4,5),s(p,2,6),s(p,4,6))
+    b==0x45 && return boxcut3(s(p,2,3),s(p,6,7),s(p,0,1),s(p,6,4),s(p,0,4))
+    b==0x51 && return boxcut3(s(p,4,5),s(p,0,1),s(p,6,7),s(p,0,2),s(p,6,2))
+    b==0x0b && return boxcut3(s(p,1,5),s(p,3,7),s(p,0,4),s(p,3,2),s(p,0,2))
+    b==0x0d && return boxcut3(s(p,2,6),s(p,0,4),s(p,3,7),s(p,0,1),s(p,3,1))
+    b==0x23 && return boxcut3(s(p,1,3),s(p,0,2),s(p,5,7),s(p,0,4),s(p,5,4))
+    b==0x31 && return boxcut3(s(p,4,6),s(p,5,7),s(p,0,2),s(p,5,1),s(p,0,1))
+
+    b==0x33 && return boxcut4f(s(p,0,2),s(p,4,6),s(p,1,3),s(p,5,7))
+    b==0x55 && return boxcut4f(s(p,0,1),s(p,2,3),s(p,4,5),s(p,6,7))
+    b==0xff && return boxcut4f(s(p,0,4),s(p,1,5),s(p,2,6),s(p,3,7))
+
+    b==0x17 && return boxcut4(s(p,1,5),s(p,4,5),s(p,2,3),s(p,1,3),s(p,4,6),s(p,2,6))
+    b==0x4d && return boxcut4(s(p,3,1),s(p,0,1),s(p,6,7),s(p,3,7),s(p,0,4),s(p,6,4))
+    b==0x71 && return boxcut4(s(p,6,2),s(p,0,2),s(p,5,7),s(p,6,7),s(p,0,1),s(p,5,1))
+    b==0x2b && return boxcut4(s(p,5,4),s(p,0,4),s(p,3,7),s(p,5,7),s(p,0,2),s(p,3,2))
+
+    error("unhandled intersection")
 end
+
+# return the intersection point, in [0,1] if the edge intersects p,
+# of the plane p with the cube edge from corner c1 to c2.
+function s{N}(p::Plane{N},c1::SVector{N},c2::SVector{N})
+    # Solve the equation p'*(c1 + α*(c2-c1)) = c for α,
+    # hence α = (c - p'*c1) / (p'*(c2-c1))
+    return (p.c - dot(p.p,c1)) / dot(p.p, c2-c1)
+end
+function s(p::Plane, c1::Integer, c2::Integer)
+    c = corners(p)
+    return s(p, c[c1-1], c[c2-1])
+end
+
+# box volume when plane contains one vertex, and intersects adjacent
+# edges at e1,e2,e3
+boxcut1(e1,e2,e3) = 0.16666666666666666 * e1*e2*e3
+
+# box volume when plane contains 2 vertices
+boxcut2(e01,e02,e11,e12) = 0.25 * (e01*e02 + e11*e12)
+
+# box volume when plane contains 3 vertices
+boxcut3(a,b,c,d,e,f) = 0.16666666666666666 * (a+b+c) + 0.125*(b+c)*(1-(1-d)*(1-e))
+
+# box volume when plane contains 4 vertices, all in the same face
+boxcut4f(a,b,c,d) = 0.25*(a+b+c+d)
+
+# box volume when plane contains 4 vertices, not all on same face
+boxcut4(a,b,c,d,e,f) = 0.16666666666666666 + ...
