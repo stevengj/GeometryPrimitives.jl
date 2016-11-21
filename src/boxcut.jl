@@ -31,13 +31,63 @@ function boxcut{N}(p::Plane{N})
     return _boxcut(b, p)
 end
 
-# permute the bits of b, assuming the first bit is 0, to
-# the new positions given by b1..b7.  e.g. pbits(b,1,2,3,4,5,6,7) is the identity
-pbits(b::UInt8, b1,b2,b3,b4,b5,b6,b7) =
-    UInt8(bit(b,0x02)<<b1 + bit(b,0x04)<<b2 + bit(b,0x08)<<b3 +
-          bit(b,0x10)<<b4 + bit(b,0x20)<<b5 + bit(b,0x40)<<b6 +
-          bit(b,0x80)<<b7)
+# a permutation p of 8 bits.  bit i -> bit p[i+1], where i=0 is the
+# least significant bit.  BitPerm(0,1,2,3,4,5,6,7) is the identity.
+# (performance doesn't matter since this is only used at compile time)
+immutable BitPerm
+    p::NTuple{8,UInt8}
+    function BitPerm(p::NTuple{8,UInt8})
+        # sort(collect(p)) != collect(0:7) && error("$p is not a permutation of 0:7")
+        new(p)
+    end
+    BitPerm(b0,b1,b2,b3,b4,b5,b6,b7) = BitPerm((UInt8(b0),UInt8(b1),UInt8(b2),UInt8(b3),UInt8(b4),UInt8(b5),UInt8(b6),UInt8(b7)))
+end
+Base.getindex(p::BitPerm, i::Integer) = p.p[i+1]
 bit(b, mask) = ifelse(b & mask != zero(b), one(b), zero(b))
+Base.:*(p::BitPerm, b::UInt8) = # permute b according to p:
+    UInt8(bit(b,0x01)<<p[0] + bit(b,0x02)<<p[1] + bit(b,0x04)<<p[2] + bit(b,0x08)<<p[3] +
+          bit(b,0x10)<<p[4] + bit(b,0x20)<<p[5] + bit(b,0x40)<<p[6] + bit(b,0x80)<<p[7])
+Base.:*(p1::BitPerm, p2::BitPerm) = BitPerm(p1[p2[0]],p1[p2[1]],p1[p2[2]],p1[p2[3]],p1[p2[4]],p1[p2[5]],p1[p2[6]],p1[p2[7]])
+
+# bit permutations corresponding to x -> (1-x) mirror flips that flip
+# the corner of bits 0..7 to (0,0,0) for corners of 3d box
+const bitflip3 = [
+    BitPerm(0,1,2,3,4,5,6,7), # bit 0  [0,0,0]  0x01
+    BitPerm(1,0,3,2,5,4,7,6), # bit 1  [0,0,1]  0x02
+    BitPerm(2,3,0,1,6,7,4,5), # bit 2  [0,1,0]  0x04
+    BitPerm(3,2,1,0,7,6,5,4), # bit 3  [0,1,1]  0x08
+    BitPerm(4,5,6,7,0,1,2,3), # bit 4  [1,0,0]  0x10
+    BitPerm(5,4,7,6,1,0,3,2), # bit 5  [1,0,1]  0x20
+    BitPerm(6,7,4,5,2,3,0,1), # bit 6  [1,1,0]  0x40
+    BitPerm(7,6,5,4,3,2,1,0), # bit 7  [1,1,1]  0x80
+]
+# bit permutations corresponding to the 6 rotations of the
+# cube that preserve (0,0,0) and (1,1,1) (bits 0 and 7)
+const rotate3 = [
+BitPerm(0,1,2,3,4,5,6,7), # identity
+BitPerm(0,2,4,6,1,3,5,7), # rotate 120° counter-clockwise
+BitPerm(0,4,1,5,2,6,3,7), # rotate 120° clockwise
+BitPerm(0,2,1,3,4,6,5,7), # mirror flip 1
+BitPerm(0,1,4,5,2,3,6,7), # mirror flip 2
+BitPerm(0,4,2,6,1,5,3,7), # mirror flip 3
+]
+# Find the permutation, if any, that maps a0 to b.
+# composed from the bitflip3 and rotate3 operations.
+# Assumes bit 0 of a0 is set.  Returns a nullable.
+function findperm3(a0::UInt8, b::UInt8)
+    a0 == b && return Nullable(BitPerm(0,1,2,3,4,5,6,7))
+    count_ones(a0) != count_ones(b) && return Nullable{BitPerm}()
+    # just do a brute-force search, since performance is not critical:
+    for i in leading_zeros(b):7
+        if (0x01 << i) & b != 0x00 # bit i is set: rotate to it from [0,0,0]
+            for k = 1:length(rotate3)
+                p = bitflip3[i+1]*rotate3[k]
+                p*a0 == b && return Nullable(p)
+            end
+        end
+    end
+    return Nullable{BitPerm}()
+end
 
 # boxcut function but given bitmask b of corners in p
 function _boxcut(b::UInt8, p::Plane{3})
@@ -59,13 +109,13 @@ function _boxcut(b::UInt8, p::Plane{3})
     #     5  [1,0,1]  0x20
     #     6  [1,1,0]  0x40
     #     7  [1,1,1]  0x80
-    b&0x02!=0x00 && return __boxcut(pbits(0,3,2,5,4,7,6), Plane(SVector(p.p[1],p.p[2],-p.p[3]), p.c - p.p[3])
-    b&0x04!=0x00 && return __boxcut(pbits(3,0,1,6,7,4,5), Plane(SVector(p.p[1],-p.p[2],p.p[3]), p.c - p.p[2])
-    b&0x10!=0x00 && return __boxcut(pbits(5,6,7,0,1,2,3), Plane(SVector(-p.p[1],p.p[2],p.p[3]), p.c - p.p[1])
-    b&0x08!=0x00 && return __boxcut(pbits(2,1,0,7,6,5,4), Plane(SVector(p.p[1],-p.p[2],-p.p[3]), p.c - p.p[2] - p.p[3])
-    b&0x20!=0x00 && return __boxcut(pbits(4,7,6,1,0,3,2), Plane(SVector(-p.p[1],p.p[2],-p.p[3]), p.c - p.p[1] - p.p[3])
-    b&0x40!=0x00 && return __boxcut(pbits(7,4,5,2,3,0,1), Plane(SVector(-p.p[1],-p.p[2],p.p[3]), p.c - p.p[1] - p.p[2])
-    #= b&0x80!=0x00 && =# return __boxcut(pbits(6,5,4,3,2,1,0), Plane(SVector(-p.p[1],-p.p[2],-p.p[3]), p.c - p.p[1] - p.p[2] - p.p[3])
+    b&0x02!=0x00 && return __boxcut(, Plane(SVector(p.p[1],p.p[2],-p.p[3]), p.c - p.p[3])
+    b&0x04!=0x00 && return __boxcut(, Plane(SVector(p.p[1],-p.p[2],p.p[3]), p.c - p.p[2])
+    b&0x10!=0x00 && return __boxcut(, Plane(SVector(-p.p[1],p.p[2],p.p[3]), p.c - p.p[1])
+    b&0x08!=0x00 && return __boxcut(, Plane(SVector(p.p[1],-p.p[2],-p.p[3]), p.c - p.p[2] - p.p[3])
+    b&0x20!=0x00 && return __boxcut(, Plane(SVector(-p.p[1],p.p[2],-p.p[3]), p.c - p.p[1] - p.p[3])
+    b&0x40!=0x00 && return __boxcut(, Plane(SVector(-p.p[1],-p.p[2],p.p[3]), p.c - p.p[1] - p.p[2])
+    #= b&0x80!=0x00 && =# return __boxcut(, Plane(SVector(-p.p[1],-p.p[2],-p.p[3]), p.c - p.p[1] - p.p[2] - p.p[3])
 end
 
 # boxcut function given bitmask b, canonicalized so that
