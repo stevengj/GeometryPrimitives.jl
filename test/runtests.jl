@@ -27,8 +27,8 @@ function checktree{N}(t::KDTree{N}, olist::Vector{Object{N}}, ntrials=10^3)
     ub = SVector{N}(fill(-Inf,N))
     for i in eachindex(olist)
         lbi,ubi = bounds(olist[i])
-        lb = min(lb,lbi)
-        ub = max(ub,ubi)
+        lb = min.(lb,lbi)
+        ub = max.(ub,ubi)
     end
     for i = 1:ntrials
         x = randnb(lb,ub)

@@ -2,13 +2,13 @@ module GeometryPrimitives
 
 using Compat, StaticArrays
 
-abstract Object{N} # a solid geometric object in N dimensions
-Base.ndims{N}(o::Object{N}) = N
+abstract type Object{N} end # a solid geometric object in N dimensions
+Base.ndims(o::Object{N}) where N = N
 
 export Object, normal, bounds
 
-Base.in{N}(x::AbstractVector, o::Object{N}) = SVector{N}(x) in o
-normal{N}(x::AbstractVector, o::Object{N}) = normal(SVector{N}(x), o)
+Base.in(x::AbstractVector, o::Object{N}) where N = SVector{N}(x) in o
+normal(x::AbstractVector, o::Object{N}) where N = normal(SVector{N}(x), o)
 
 include("sphere.jl")
 include("box.jl")

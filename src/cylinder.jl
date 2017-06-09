@@ -1,23 +1,23 @@
 export Cylinder
 
-type Cylinder{N,D} <: Object{N}
+struct Cylinder{N,D} <: Object{N}
     c::SVector{N,Float64} # Cylinder center
     a::SVector{N,Float64}   # axis unit vector
     r::Float64          # radius
     h2::Float64         # height * 0.5
     data::D             # auxiliary data
 end
-Cylinder{D}(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data::D=nothing) =
+Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data::D=nothing) where D =
     Cylinder{length(c),D}(c, normalize(a), r, h * 0.5, data)
 
-function Base.in{N}(x::SVector{N}, s::Cylinder{N})
+function Base.in(x::SVector{N}, s::Cylinder{N}) where N
     d = x - s.c
     p = dot(d, s.a)
     abs(p) > s.h2 && return false
-    return sumabs2(d - p*s.a) ≤ s.r^2
+    return sum(abs2, d - p*s.a) ≤ s.r^2
 end
 
-function normal{N}(x::SVector{N}, s::Cylinder{N})
+function normal(x::SVector{N}, s::Cylinder{N}) where N
     d = x - s.c
     p = dot(d, s.a)
     p > s.h2 && return s.a
@@ -48,5 +48,5 @@ function bounds(s::Cylinder)
     e1, e2 = endcircles(s)
     l1, u1 = bounds(e1)
     l2, u2 = bounds(e2)
-    return min(l1,l2), max(u1,u2)
+    return min.(l1,l2), max.(u1,u2)
 end
