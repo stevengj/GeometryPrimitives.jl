@@ -13,20 +13,20 @@ because a given object may be in both branches of the tree.  (Normally,
 K-D trees are used for nearest-neighbor searches for a list of *points*,
 not objects of nonzero size.)
 """
-type KDTree{K}
+struct KDTree{K}
     o::Vector{Object{K}}
     ix::Int
     x::Float64
     left::KDTree  # objects ≤ x in coordinate ix
     right::KDTree # objects > x in coordinate ix
-    KDTree(o::AbstractVector{Object{K}}) = new(o, 0)
-    function KDTree(x::Real, ix::Integer, left::KDTree{K}, right::KDTree{K})
+    KDTree{K}(o::AbstractVector{Object{K}}) where K = new(o, 0)
+    function KDTree{K}(x::Real, ix::Integer, left::KDTree{K}, right::KDTree{K}) where K
         1 ≤ ix ≤ K || throw(BoundsError())
         new(Object{K}[], ix, x, left, right)
     end
 end
 
-Base.ndims{K}(::KDTree{K}) = K
+Base.ndims(::KDTree{K}) where K = K
 
 """
     KDTree(objects::AbstractVector{Object{K}})
@@ -37,7 +37,7 @@ Construct a K-D tree (`KDTree`) representation of a list of
 When searching the tree, objects that appear earlier in `objects`
 take precedence over objects that appear later.
 """
-function KDTree{K}(o::AbstractVector{Object{K}})
+function KDTree(o::AbstractVector{Object{K}}) where K
     (length(o) <= 4 || K == 0) && return KDTree{K}(o)
 
     # figure out the best dimension ix to divide over,
@@ -80,7 +80,7 @@ end
 
 depth(kd::KDTree) = kd.ix == 0 ? 0 : max(depth(kd.left), depth(kd.right)) + 1
 
-Base.show{K}(io::IO, kd::KDTree{K}) = print(io, "KDTree{$K} of depth ", depth(kd))
+Base.show(io::IO, kd::KDTree{K}) where K = print(io, "KDTree{$K} of depth ", depth(kd))
 
 function _show(io::IO, kd::KDTree, indent)
     indentstr = " "^indent
@@ -94,12 +94,12 @@ function _show(io::IO, kd::KDTree, indent)
     end
 end
 
-function Base.show{K}(io::IO, ::MIME"text/plain", kd::KDTree{K})
+function Base.show(io::IO, ::MIME"text/plain", kd::KDTree{K}) where K
     println(io, kd, ':')
     _show(io, kd, 0)
 end
 
-function Base.findin{N}(p::SVector{N}, o::Vector{Object{N}})
+function Base.findin(p::SVector{N}, o::Vector{Object{N}}) where N
     for i in eachindex(o)
         if p ∈ o[i]
             return Nullable{Object{N}}(o[i])
@@ -108,7 +108,7 @@ function Base.findin{N}(p::SVector{N}, o::Vector{Object{N}})
     return Nullable{Object{N}}()
 end
 
-function Base.findin{N}(p::SVector{N}, kd::KDTree{N})
+function Base.findin(p::SVector{N}, kd::KDTree{N}) where N
     if isempty(kd.o)
         if p[kd.ix] ≤ kd.x
             return findin(p, kd.left)
@@ -126,5 +126,5 @@ end
 Return a `Nullable` container of the first object in `kd` that contains
 the point `p`, or an `isnull` container if no object was found.
 """
-Base.findin{N}(p::AbstractVector, kd::KDTree{N}) = findin(SVector{N}(p), kd)
-Base.findin{N}(p::AbstractVector, o::Vector{Object{N}}) = findin(SVector{N}(p), o)
+Base.findin(p::AbstractVector, kd::KDTree{N}) where N = findin(SVector{N}(p), kd)
+Base.findin(p::AbstractVector, o::Vector{Object{N}}) where N = findin(SVector{N}(p), o)
