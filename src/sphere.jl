@@ -6,6 +6,6 @@ type Sphere{N,D} <: Object{N}
     data::D             # auxiliary data
 end
 Sphere{D}(c::AbstractVector, r::Real, data::D=nothing) = Sphere{length(c),D}(c, r, data)
-Base.in{N}(x::SVector{N}, s::Sphere{N}) = sumabs2(x - s.c) ≤ s.r^2
+Base.in{N}(x::SVector{N}, s::Sphere{N}) = sum(abs2,x - s.c) ≤ s.r^2
 normal{N}(x::SVector{N}, s::Sphere{N}) = normalize(x - s.c)
 bounds(s::Sphere) = (s.c-s.r, s.c+s.r)

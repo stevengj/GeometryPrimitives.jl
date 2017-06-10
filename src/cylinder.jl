@@ -14,7 +14,7 @@ function Base.in{N}(x::SVector{N}, s::Cylinder{N})
     d = x - s.c
     p = dot(d, s.a)
     abs(p) > s.h2 && return false
-    return sumabs2(d - p*s.a) ≤ s.r^2
+    return sum(abs2,d - p*s.a) ≤ s.r^2
 end
 
 function normal{N}(x::SVector{N}, s::Cylinder{N})
@@ -48,5 +48,5 @@ function bounds(s::Cylinder)
     e1, e2 = endcircles(s)
     l1, u1 = bounds(e1)
     l2, u2 = bounds(e2)
-    return min(l1,l2), max(u1,u2)
+    return min.(l1,l2), max.(u1,u2)
 end
