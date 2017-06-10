@@ -19,10 +19,10 @@ type KDTree{K}
     x::Float64
     left::KDTree  # objects ≤ x in coordinate ix
     right::KDTree # objects > x in coordinate ix
-    KDTree(o::AbstractVector{Object{K}}) = new(o, 0)
-    function KDTree(x::Real, ix::Integer, left::KDTree{K}, right::KDTree{K})
+    (::Type{KDTree{K}}){K}(o::AbstractVector{Object{K}}) = new{K}(o, 0)  # inner constructor compatible with both v0.5 and v0.6
+    function (::Type{KDTree{K}}){K}(x::Real, ix::Integer, left::KDTree{K}, right::KDTree{K})  # inner constructor compatible with both v0.5 and v0.6
         1 ≤ ix ≤ K || throw(BoundsError())
-        new(Object{K}[], ix, x, left, right)
+        new{K}(Object{K}[], ix, x, left, right)
     end
 end
 
