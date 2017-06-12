@@ -36,7 +36,7 @@ function bounds(b::Box)
     # Below, b.p' .* b.r' would have been conceptually better because its "columns"
     # are scaled axes vectors.  However, then the result is not SMatrix because b.r'
     # is not SVector.  Then, we cannot use maximum(..., Val{2}), which is type-stable
-    # for SMatrix.  The workaround is to calculate b.p .* b.r and take transpose.
+    # for SMatrix.  A workaround is to calculate b.p .* b.r and take transpose.
     A = (b.p .* b.r)'  # SMatrix
 
     m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box

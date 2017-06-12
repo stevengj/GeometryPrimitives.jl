@@ -1,8 +1,8 @@
 using GeometryPrimitives, StaticArrays, Base.Test
 
 const rtol = Base.rtoldefault(Float64)
-const one⁻ = 1-rtol  # slightly less than 1
-const one⁺ = 1+rtol  # slightly greater than 1
+const one⁻ = 1 - rtol  # slightly less than 1
+const one⁺ = 1 + rtol  # slightly greater than 1
 
 Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip(a,b))
 const rng = MersenneTwister(0) # test with reproducible pseudorandom numbers
@@ -81,8 +81,8 @@ end
 
             Cin = R * (GeometryPrimitives.signmatrix(br) .* (one⁻ .* [r1,r2]))  # around corners, inside
             Cout = R * (GeometryPrimitives.signmatrix(br) .* (one⁺ .* [r1,r2]))  # around corners, outside
-            @test all([Cin[:,j] for j = 1:4] .∈ br)
-            @test all([Cout[:,j] for j = 1:4] .∉ br)
+            for j = 1:4; @test Cin[:,j] ∈ br; end
+            for j = 1:4; @test Cout[:,j] ∉ br; end
 
             @test normal(R*[1.1r1, 0], br) ≈ R*[1,0]
             @test normal(R*[-1.1r1, 0], br) ≈ R*[-1,0]
@@ -116,8 +116,8 @@ end
             bp1, bp2 = bp[:,1], bp[:,2]
 
             # Test the two bounding points are on the ellipsoid perimeter.
-            @test all(one⁻ .* (bp1, bp2) .∈ er)
-            @test all(one⁺ .* (bp1, bp2) .∉ er)
+            @test (one⁻ * bp1 ∈ er) && (one⁻ * bp2 ∈ er)
+            @test (one⁺ * bp1 ∉ er) && (one⁺ * bp2 ∉ er)
 
             # Test the normal vector at the two bounding points are the x- and y-directions.
             @test normal(bp1, er) ≈ [1,0]
