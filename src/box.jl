@@ -11,7 +11,7 @@ function Box(c::AbstractVector, d::AbstractVector,
              axes=eye(length(c),length(c)), # columns are axes unit vectors
              data=nothing)
     length(c) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,2))), d*0.5, data)
+    return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), d*0.5, data)
 end
 
 function Base.in{N}(x::SVector{N}, b::Box{N})
@@ -33,7 +33,12 @@ signmatrix(b::Object{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
 signmatrix(b::Object{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
 
 function bounds(b::Box)
-    A = inv(b.p) .* b.r' # array of scaled axes vectors.
-    m = maximum(A * signmatrix(b), 2)[:,1] # extrema of all 2^N corners of the box
+    # Below, b.p' .* b.r' would have been conceptually better because its "columns"
+    # are scaled axes vectors.  However, then the result is not SMatrix because b.r'
+    # is not SVector.  Then, we cannot use maximum(..., Val{2}), which is type-stable
+    # for SMatrix.  A workaround is to calculate b.p .* b.r and take transpose.
+    A = (b.p .* b.r)'  # SMatrix
+
+    m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
 end
