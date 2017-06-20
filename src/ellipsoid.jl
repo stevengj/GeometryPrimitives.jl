@@ -40,9 +40,6 @@ function boundpts{N}(b::Ellipsoid{N})
     return M
 end
 
-# NaN-ignoring max.
-nanmax(x,y) = isnan(x) ? y : (isnan(y) ? x : max(x,y))
-
 function bounds{N}(b::Ellipsoid{N})
     M = boundpts(b)
 
@@ -53,8 +50,11 @@ function bounds{N}(b::Ellipsoid{N})
     #
     # However, if one of a, b, c is zero, the shape is a disk.  Then one column of M can be
     # completely filled with NaN.  This column must not be counted as a bounding point, so
-    # we apply nanmax by StaticArrays.reducedim along the row direction.
-    m = reducedim(nanmax, M, Val{2})[:,1]
+    # we apply NaN-ignoring maximum by StaticArrays.reducedim along the row direction.
+    #
+    # For the efficient implementation of NaN-ignoring maximum, see
+    # https://discourse.julialang.org/t/inconsistency-between-findmax-and-maximum-with-respect-to-nan/4214/8
+    m = reducedim((x,y) -> x<y ? y : x, M, Val{2}, -Inf)[:,1]
 
     return (b.c-m,b.c+m)
 end
