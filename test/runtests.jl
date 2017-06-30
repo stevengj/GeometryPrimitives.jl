@@ -18,7 +18,7 @@ function inbounds(x,lb,ub)
 end
 
 "check the bounding box of o with randomized trials"
-function checkbounds{N}(o::Object{N}, ntrials=10^4)
+function checkbounds{N}(o::Shape{N}, ntrials=10^4)
     lb,ub = bounds(o)
     for i = 1:ntrials
         x = randnb(lb,ub)
@@ -27,7 +27,7 @@ function checkbounds{N}(o::Object{N}, ntrials=10^4)
     return true
 end
 
-function checktree{N}(t::KDTree{N}, olist::Vector{Object{N}}, ntrials=10^3)
+function checktree{N}(t::KDTree{N}, olist::Vector{Shape{N}}, ntrials=10^3)
     lb = SVector{N}(fill(Inf,N))
     ub = SVector{N}(fill(-Inf,N))
     for i in eachindex(olist)
@@ -47,7 +47,7 @@ end
 
 @testset "GeometryPrimitives" begin
 
-    @testset "Object" begin
+    @testset "Shape" begin
         @testset "Sphere" begin
             s = Sphere([3,4], 5)
             @test ndims(s) == 2
@@ -143,15 +143,15 @@ end
     end
 
     @testset "KDTree" begin
-        o = Object{2}[Sphere([i,0], 1, i) for i in 0:20]
+        o = Shape{2}[Sphere([i,0], 1, i) for i in 0:20]
         kd = KDTree(o)
         @test GeometryPrimitives.depth(kd) == 4
         @test get(findin([10.1,0], kd)).data == 10
         @test isnull(findin([10.1,1], kd))
         @test checktree(kd, o)
-        o = Object{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
+        o = Shape{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
         @test checktree(KDTree(o), o)
-        o = Object{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
+        o = Shape{3}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
         @test checktree(KDTree(o), o)
     end
 

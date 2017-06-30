@@ -1,6 +1,6 @@
 export Cylinder
 
-type Cylinder{N,D} <: Object{N}
+type Cylinder{N,D} <: Shape{N}
     c::SVector{N,Float64} # Cylinder center
     a::SVector{N,Float64}   # axis unit vector
     r::Float64          # radius

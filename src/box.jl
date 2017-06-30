@@ -1,6 +1,6 @@
 export Box
 
-type Box{N,D} <: Object{N}
+type Box{N,D} <: Shape{N}
     c::SVector{N,Float64} # box center
     p::SMatrix{N,N,Float64} # projection matrix to box coordinates
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
@@ -28,9 +28,9 @@ function normal{N}(x::SVector{N}, b::Box{N})
     return SVector{N}(b.p[i,:]) * sign(d[i])
 end
 
-signmatrix(b::Object{1}) = SMatrix{1,2}(1,-1)
-signmatrix(b::Object{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
-signmatrix(b::Object{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
+signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
+signmatrix(b::Shape{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
+signmatrix(b::Shape{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
 
 function bounds(b::Box)
     # Below, b.p' .* b.r' would have been conceptually better because its "columns"

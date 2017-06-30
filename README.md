@@ -15,7 +15,7 @@ for the user to specify the function `c(x)`.  In many applications,
 `c` will be piecewise constant, and you want to be able to specify
 `c = 1` in one box, `c = 2` in some cylinders, etcetera.   The
 GeometryPrimitives package allows the user to provide a list of
-objects with associated data (in this case, the value of `c`) to
+shapes with associated data (in this case, the value of `c`) to
 define such a `c(x)`.
 
 Furthermore, the application to discretized simulations imposes a couple
@@ -23,13 +23,13 @@ of additional requirements:
 
 * One needs to be able to evaluate `c(x)` a huge number of times (once
   for every point on a grid).  So, we provide a fast O(log n) K-D tree
-  data structure for rapid searching of objects.
+  data structure for rapid searching of shapes.
 
 * Often, one wants to compute the *average* of `c(x)` over a voxel,
   so we provide routines for rapid *approximate* voxel averages.
 
 * Often, one needs not only the value `c(x)` but the normal vector
-  to the nearest object, so we provide normal-vector computation.
+  to the nearest shape, so we provide normal-vector computation.
 
 This package was inspired by the geometry utilities in my
 [Libctl](http://ab-initio.mit.edu/wiki/index.php/Libctl) package.
