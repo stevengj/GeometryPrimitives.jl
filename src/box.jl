@@ -1,6 +1,6 @@
 export Box
 
-type Box{N,D} <: Shape{N}
+immutable Box{N,D} <: Shape{N}
     c::SVector{N,Float64} # box center
     p::SMatrix{N,N,Float64} # projection matrix to box coordinates
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
