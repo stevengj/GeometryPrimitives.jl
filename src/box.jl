@@ -14,6 +14,15 @@ function Box(c::AbstractVector, d::AbstractVector,
     return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), d*0.5, data)
 end
 
+function Box(b::NTuple{2,AbstractVector},
+             axes=eye(length(b[1]),length(b[1])), # columns are axes unit vectors
+             data=nothing)
+    length(b[1]) == length(b[2]) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
+    c = (b[1] + b[2]) / 2
+    d = abs.(b[2] - b[1])
+    return Box(c,d,axes,data)
+end
+
 function Base.in{N}(x::SVector{N}, b::Box{N})
     d = b.p * (x - b.c)
     for i = 1:N
