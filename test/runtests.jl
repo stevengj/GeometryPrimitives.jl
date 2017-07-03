@@ -63,6 +63,9 @@ end
 
         @testset "Box" begin
             b = Box([0,0], [2,4])  # specify center and radii
+            b′ = Box(([-1,-2],[1,2]))  # specify boundaries
+            @test b′ == b
+            @test hash(b′) == hash(b)
             @test b == deepcopy(b)
             @test @inferred(hash(b)) == hash(deepcopy(b))
             @test @inferred([0.3,-1.5] ∈ b)
