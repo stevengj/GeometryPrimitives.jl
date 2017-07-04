@@ -51,12 +51,12 @@ end
         @testset "Sphere" begin
             s = Sphere([3,4], 5)
             @test s == deepcopy(s)
-            @test hash(s) == hash(deepcopy(s))
-            @test ndims(s) == 2
-            @test [3,9] ∈ s
+            @test @inferred(hash(s)) == hash(deepcopy(s))
+            @test @inferred(ndims(s)) == 2
+            @test @inferred([3,9] ∈ s)
             @test [3,9.1] ∉ s
-            @test normal([-1,2],s) == normalize([-1,2] - [3,4])
-            @test bounds(s) == ([-2,-1],[8,9])
+            @test @inferred(normal([-1,2],s)) == normalize([-1,2] - [3,4])
+            @test @inferred(bounds(s)) == ([-2,-1],[8,9])
             @test checkbounds(s)
             @test checkbounds(Sphere([1,2,3], 2))
         end
@@ -64,13 +64,13 @@ end
         @testset "Box" begin
             b = Box([0,0], [2,4])  # specify center and radii
             @test b == deepcopy(b)
-            @test hash(b) == hash(deepcopy(b))
-            @test [0.3,-1.5] ∈ b
+            @test @inferred(hash(b)) == hash(deepcopy(b))
+            @test @inferred([0.3,-1.5] ∈ b)
             @test [0.3,-2.5] ∉ b
-            @test normal([1.1,0],b) == [1,0]
+            @test @inferred(normal([1.1,0],b)) == [1,0]
             @test normal([-1.1,0],b) == [-1,0]
             @test normal([1.1,2.01],b) == [0,1]
-            @test bounds(b) == ([-1,-2],[1,2])
+            @test @inferred(bounds(b)) == ([-1,-2],[1,2])
             @test bounds(Box([0,0], [2,4], [1 1; 1 -1])) ≈ ([-3*√0.5,-3*√0.5], [3*√0.5,3*√0.5])
             @test checkbounds(b)
             @test checkbounds(Box([0,0], [2,4], [1 1; 1 -1]))
@@ -85,12 +85,12 @@ end
 
             Cin = R * (GeometryPrimitives.signmatrix(br) .* (one⁻ .* [r1,r2]))  # around corners, inside
             Cout = R * (GeometryPrimitives.signmatrix(br) .* (one⁺ .* [r1,r2]))  # around corners, outside
-            for j = 1:4; @test Cin[:,j] ∈ br; end
+            for j = 1:4; @test @inferred(Cin[:,j] ∈ br); end
             for j = 1:4; @test Cout[:,j] ∉ br; end
 
             @test br == deepcopy(br)
-            @test hash(br) == hash(deepcopy(br))
-            @test normal(R*[1.1r1, 0], br) ≈ R*[1,0]
+            @test @inferred(hash(br)) == hash(deepcopy(br))
+            @test @inferred(normal(R*[1.1r1, 0], br)) ≈ R*[1,0]
             @test normal(R*[-1.1r1, 0], br) ≈ R*[-1,0]
             @test normal(R*[0, 1.1r2], br) ≈ R*[0,1]
             @test normal(R*[0, -1.1r2], br) ≈ R*[0,-1]
@@ -98,20 +98,20 @@ end
 
             xmax = (R*[r1,r2])[1]
             ymax = (R*[-r1,r2])[2]
-            @test bounds(br) ≈ (-[xmax,ymax], [xmax,ymax])
+            @test @inferred(bounds(br)) ≈ (-[xmax,ymax], [xmax,ymax])
             @test checkbounds(br)
         end
 
         @testset "Ellipsoid" begin
             e = Ellipsoid([0,0], [2,4])
             @test e == deepcopy(e)
-            @test hash(e) == hash(deepcopy(e))
-            @test [0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e
+            @test @inferred(hash(e)) == hash(deepcopy(e))
+            @test @inferred([0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e)
             @test [0.3,2*sqrt(1 - 0.3^2)+0.01] ∉ e
-            @test normal([1.1,0],e) == [1,0]
+            @test @inferred(normal([1.1,0],e)) == [1,0]
             @test normal([-1.1,0],e) == [-1,0]
             @test normal([0,2.01],e) == [0,1]
-            @test bounds(e) == ([-1,-2],[1,2])
+            @test @inferred(bounds(e)) == ([-1,-2],[1,2])
             @test checkbounds(e)
             @test checkbounds(Ellipsoid([0,0], [2,4], [1 1; 1 -1]))
         end
@@ -125,30 +125,30 @@ end
 
             # Test the two bounding points are on the ellipsoid perimeter.
             @test er == deepcopy(er)
-            @test hash(er) == hash(deepcopy(er))
-            @test (one⁻ * bp1 ∈ er) && (one⁻ * bp2 ∈ er)
+            @test @inferred(hash(er)) == hash(deepcopy(er))
+            @test (@inferred(one⁻ * bp1 ∈ er)) && (one⁻ * bp2 ∈ er)
             @test (one⁺ * bp1 ∉ er) && (one⁺ * bp2 ∉ er)
 
             # Test the normal vector at the two bounding points are the x- and y-directions.
-            @test normal(bp1, er) ≈ [1,0]
+            @test @inferred(normal(bp1, er)) ≈ [1,0]
             @test normal(bp2, er) ≈ [0,1]
 
             xmax, ymax = bp1[1], bp2[2]
 
-            @test bounds(er) == ([-xmax, -ymax], [xmax, ymax])
+            @test @inferred(bounds(er)) == ([-xmax, -ymax], [xmax, ymax])
             @test checkbounds(er)
         end
 
         @testset "Cylinder" begin
             c = Cylinder([0,0,0], 0.3, [0,0,1], 2.2)
             @test c == deepcopy(c)
-            @test hash(c) == hash(deepcopy(c))
-            @test [0.2,0.2,1] ∈ c
+            @test @inferred(hash(c)) == hash(deepcopy(c))
+            @test @inferred([0.2,0.2,1] ∈ c)
             @test SVector(0.2,0.2,1.2) ∉ c
             @test [0.2,0.25,1] ∉ c
-            @test normal([0.1,0.2,-1.3], c) == [0,0,-1]
+            @test @inferred(normal([0.1,0.2,-1.3], c)) == [0,0,-1]
             @test normal([0.31, 0, 0.3], c) == [1,0,0]
-            @test bounds(c) ≈ ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
+            @test @inferred(bounds(c)) ≈ ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
             @test checkbounds(c)
             @test checkbounds(Cylinder([1,17,44], 0.3, [1,-2,3], 1.1))
         end

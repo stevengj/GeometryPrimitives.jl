@@ -1,8 +1,8 @@
 export Box
 
-type Box{N,D} <: Shape{N}
+type Box{N,D,L} <: Shape{N}
     c::SVector{N,Float64} # box center
-    p::SMatrix{N,N,Float64} # projection matrix to box coordinates
+    p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     data::D             # auxiliary data
 end
@@ -10,8 +10,8 @@ end
 function Box(c::AbstractVector, d::AbstractVector,
              axes=eye(length(c),length(c)), # columns are axes unit vectors
              data=nothing)
-    length(c) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), d*0.5, data)
+    (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
+    return Box{N,typeof(data),N^2}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), d*0.5, data)
 end
 
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
