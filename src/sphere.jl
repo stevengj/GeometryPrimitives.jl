@@ -1,6 +1,6 @@
 export Sphere
 
-immutable Sphere{N,D} <: Shape{N}
+immutable Sphere{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # sphere center
     r::Float64          # radius
     data::D             # auxiliary data

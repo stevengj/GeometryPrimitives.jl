@@ -1,6 +1,6 @@
 export Cylinder
 
-immutable Cylinder{N,D} <: Shape{N}
+immutable Cylinder{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # Cylinder center
     a::SVector{N,Float64}   # axis unit vector
     r::Float64          # radius
