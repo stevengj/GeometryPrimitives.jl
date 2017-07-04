@@ -7,8 +7,9 @@ immutable Cylinder{N,D} <: Shape{N}
     h2::Float64         # height * 0.5
     data::D             # auxiliary data
 end
-Cylinder{D}(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data::D=nothing) =
-    Cylinder{length(c),D}(c, normalize(a), r, h * 0.5, data)
+
+Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data=nothing) =
+    Cylinder{length(c),typeof(data)}(c, normalize(a), r, h * 0.5, data)
 
 function Base.in{N}(x::SVector{N}, s::Cylinder{N})
     d = x - s.c

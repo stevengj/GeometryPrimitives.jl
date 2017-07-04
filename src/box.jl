@@ -2,8 +2,8 @@ export Box
 
 immutable Box{N,D} <: Shape{N}
     c::SVector{N,Float64} # box center
-    p::SMatrix{N,N,Float64} # projection matrix to box coordinates
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
+    p::SMatrix{N,N,Float64} # projection matrix to box coordinates
     data::D             # auxiliary data
 end
 
@@ -11,7 +11,7 @@ function Box(c::AbstractVector, d::AbstractVector,
              axes=eye(length(c),length(c)), # columns are axes unit vectors
              data=nothing)
     length(c) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), d*0.5, data)
+    return Box{length(c),typeof(data)}(c, d*0.5, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 end
 
 function Box(b::NTuple{2,AbstractVector},
