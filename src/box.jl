@@ -1,17 +1,17 @@
 export Box
 
-immutable Box{N,D} <: Shape{N}
+immutable Box{N,D,L} <: Shape{N}
     c::SVector{N,Float64} # box center
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
-    p::SMatrix{N,N,Float64} # projection matrix to box coordinates
+    p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     data::D             # auxiliary data
 end
 
 function Box(c::AbstractVector, d::AbstractVector,
              axes=eye(length(c),length(c)), # columns are axes unit vectors
              data=nothing)
-    length(c) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{length(c),typeof(data)}(c, d*0.5, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
+    (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
+    return Box{N,typeof(data),N^2}(c, d*0.5, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 end
 
 function Box(b::NTuple{2,AbstractVector},

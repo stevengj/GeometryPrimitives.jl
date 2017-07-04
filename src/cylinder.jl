@@ -41,8 +41,9 @@ function endcircles(s::Cylinder{3})
     b2 = cross(b1, s.a)
     axes = [s.a[1] b1[1] b2[1]; s.a[2] b1[2] b2[2]; s.a[3] b1[3] b2[3]]
     d = 2*s.r
-    return(Ellipsoid(s.c + s.a*s.h2, SVector(0.0, d, d), axes),
-           Ellipsoid(s.c - s.a*s.h2, SVector(0.0, d, d), axes))
+    et = Ellipsoid(s.c + s.a*s.h2, SVector(0.0, d, d), axes)::Ellipsoid{3,Void,9}  # top disk
+    eb = Ellipsoid(s.c - s.a*s.h2, SVector(0.0, d, d), axes)::Ellipsoid{3,Void,9}  # bottom disk
+    return (et, eb)
 end
 
 function bounds(s::Cylinder)
