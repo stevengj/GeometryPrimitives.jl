@@ -51,6 +51,7 @@ end
         @testset "Sphere" begin
             s = Sphere([3,4], 5)
             @test s == deepcopy(s)
+            @test hash(s) == hash(deepcopy(s))
             @test ndims(s) == 2
             @test [3,9] ∈ s
             @test [3,9.1] ∉ s
@@ -63,6 +64,7 @@ end
         @testset "Box" begin
             b = Box([0,0], [2,4])  # specify center and radii
             @test b == deepcopy(b)
+            @test hash(b) == hash(deepcopy(b))
             @test [0.3,-1.5] ∈ b
             @test [0.3,-2.5] ∉ b
             @test normal([1.1,0],b) == [1,0]
@@ -87,6 +89,7 @@ end
             for j = 1:4; @test Cout[:,j] ∉ br; end
 
             @test br == deepcopy(br)
+            @test hash(br) == hash(deepcopy(br))
             @test normal(R*[1.1r1, 0], br) ≈ R*[1,0]
             @test normal(R*[-1.1r1, 0], br) ≈ R*[-1,0]
             @test normal(R*[0, 1.1r2], br) ≈ R*[0,1]
@@ -102,6 +105,7 @@ end
         @testset "Ellipsoid" begin
             e = Ellipsoid([0,0], [2,4])
             @test e == deepcopy(e)
+            @test hash(e) == hash(deepcopy(e))
             @test [0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e
             @test [0.3,2*sqrt(1 - 0.3^2)+0.01] ∉ e
             @test normal([1.1,0],e) == [1,0]
@@ -121,6 +125,7 @@ end
 
             # Test the two bounding points are on the ellipsoid perimeter.
             @test er == deepcopy(er)
+            @test hash(er) == hash(deepcopy(er))
             @test (one⁻ * bp1 ∈ er) && (one⁻ * bp2 ∈ er)
             @test (one⁺ * bp1 ∉ er) && (one⁺ * bp2 ∉ er)
 
@@ -137,6 +142,7 @@ end
         @testset "Cylinder" begin
             c = Cylinder([0,0,0], 0.3, [0,0,1], 2.2)
             @test c == deepcopy(c)
+            @test hash(c) == hash(deepcopy(c))
             @test [0.2,0.2,1] ∈ c
             @test SVector(0.2,0.2,1.2) ∉ c
             @test [0.2,0.25,1] ∉ c
