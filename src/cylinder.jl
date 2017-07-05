@@ -1,6 +1,6 @@
 export Cylinder
 
-immutable Cylinder{N,D} <: Shape{N,D}
+type Cylinder{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # Cylinder center
     a::SVector{N,Float64}   # axis unit vector
     r::Float64          # radius
@@ -10,6 +10,9 @@ end
 
 Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data=nothing) =
     Cylinder{length(c),typeof(data)}(c, normalize(a), r, h * 0.5, data)
+
+Base.:(==)(s1::Cylinder, s2::Cylinder) = s1.c==s2.c && s1.a==s2.a && s1.r==s2.r && s1.h2==s2.h2 && s1.data==s2.data
+Base.hash(s::Cylinder, h::UInt) = hash(s.c, hash(s.a, hash(s.r, hash(s.h2, hash(s.data, hash(:Box, h))))))
 
 function Base.in{N}(x::SVector{N}, s::Cylinder{N})
     d = x - s.c

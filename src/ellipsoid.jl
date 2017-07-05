@@ -1,6 +1,6 @@
 export Ellipsoid
 
-immutable Ellipsoid{N,D,L} <: Shape{N,D}
+type Ellipsoid{N,D,L} <: Shape{N,D}
     c::SVector{N,Float64} # Ellipsoid center
     ri2::SVector{N,Float64} # inverse square of "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to Ellipsoid coordinates
@@ -12,6 +12,9 @@ function Ellipsoid(c::AbstractVector, d::AbstractVector, axes=eye(length(c),leng
     (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
     return Ellipsoid{N,typeof(data),N^2}(c, (d*0.5) .^ -2, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 end
+
+Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
+Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Box, h)))))
 
 Base.in{N}(x::SVector{N}, b::Ellipsoid{N}) = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 

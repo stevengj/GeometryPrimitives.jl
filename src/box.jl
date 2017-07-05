@@ -1,6 +1,6 @@
 export Box
 
-immutable Box{N,D,L} <: Shape{N,D}
+type Box{N,D,L} <: Shape{N,D}
     c::SVector{N,Float64} # box center
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
@@ -22,6 +22,9 @@ function Box(b::NTuple{2,AbstractVector},
     d = abs.(b[2] - b[1])
     return Box(c,d,axes,data)
 end
+
+Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
+Base.hash(b::Box, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Box, h)))))
 
 function Base.in{N}(x::SVector{N}, b::Box{N})
     d = b.p * (x - b.c)
