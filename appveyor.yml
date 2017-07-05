@@ -18,7 +18,7 @@ notifications:
 
 install:
 # Download most recent Julia Windows binary
-  - ps: (new-shape net.webclient).DownloadFile(
+  - ps: (new-object net.webclient).DownloadFile(
         $("http://s3.amazonaws.com/"+$env:JULIAVERSION),
         "C:\projects\julia-binary.exe")
 # Run installer silently, output to C:\projects\julia
