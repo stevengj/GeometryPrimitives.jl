@@ -105,7 +105,7 @@ end
         end
 
         @testset "Ellipsoid" begin
-            e = Ellipsoid([0,0], [2,4])
+            e = Ellipsoid([0,0], [1,2])
             @test @inferred(e == deepcopy(e))
             @test hash(e) == hash(deepcopy(e))
             @test @inferred([0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e)
@@ -115,12 +115,12 @@ end
             @test normal([0,2.01],e) == [0,1]
             @test @inferred(bounds(e)) == ([-1,-2],[1,2])
             @test checkbounds(e)
-            @test checkbounds(Ellipsoid([0,0], [2,4], [1 1; 1 -1]))
+            @test checkbounds(Ellipsoid([0,0], [1,2], [1 1; 1 -1]))
         end
 
         @testset "Ellipsoid, rotated" begin
             θ = π/3
-            er = Ellipsoid([0,0], [2,4], [cos(θ) sin(θ); sin(θ) -cos(θ)])
+            er = Ellipsoid([0,0], [1,2], [cos(θ) sin(θ); sin(θ) -cos(θ)])
             bp = GeometryPrimitives.boundpts(er)
 
             bp1, bp2 = bp[:,1], bp[:,2]

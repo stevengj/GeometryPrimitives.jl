@@ -8,10 +8,10 @@ type Box{N,D,L} <: Shape{N,D}
 end
 
 function Box(c::AbstractVector, d::AbstractVector,
-             axes=eye(length(c),length(c)), # columns are axes unit vectors
+             axes=eye(length(c)), # columns are axes unit vectors
              data=nothing)
     (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{N,typeof(data),N^2}(c, d*0.5, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
+    return Box{N,typeof(data),N^2}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 end
 
 function Box(b::NTuple{2,AbstractVector},

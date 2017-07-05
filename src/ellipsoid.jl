@@ -7,10 +7,10 @@ type Ellipsoid{N,D,L} <: Shape{N,D}
     data::D             # auxiliary data
 end
 
-function Ellipsoid(c::AbstractVector, d::AbstractVector, axes=eye(length(c),length(c)), # columns are axes unit vectors
+function Ellipsoid(c::AbstractVector, r::AbstractVector, axes=eye(length(c)), # columns are axes unit vectors
                    data=nothing)
-    (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Ellipsoid{N,typeof(data),N^2}(c, (d*0.5) .^ -2, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
+    (N = length(c)) == length(r) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
+    return Ellipsoid{N,typeof(data),N^2}(c, float(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 end
 
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
