@@ -13,7 +13,7 @@ because a given shape may be in both branches of the tree.  (Normally,
 K-D trees are used for nearest-neighbor searches for a list of *points*,
 not shapes of nonzero size.)
 """
-immutable KDTree{K}
+type KDTree{K}
     s::Vector{Shape{K}}
     ix::Int
     x::Float64
