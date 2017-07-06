@@ -14,6 +14,9 @@ function Ellipsoid(c::AbstractVector, d::AbstractVector, axes=eye(length(c),leng
     return Ellipsoid{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), (d*0.5) .^ -2, data)
 end
 
+Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
+Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Ellipsoid, h)))))
+
 Base.in{N}(x::SVector{N}, b::Ellipsoid{N}) = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 
 normal{N}(x::SVector{N}, b::Ellipsoid{N}) = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
