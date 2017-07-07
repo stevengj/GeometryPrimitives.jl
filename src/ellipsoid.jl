@@ -1,18 +1,20 @@
 export Ellipsoid
 
-type Ellipsoid{N,D} <: Shape{N}
+type Ellipsoid{N,D,L} <: Shape{N}
     c::SVector{N,Float64} # Ellipsoid center
-    p::SMatrix{N,N,Float64} # projection matrix to Ellipsoid coordinates
     ri2::SVector{N,Float64} # inverse square of "radius" (semi-axis) in each direction
+    p::SMatrix{N,N,Float64,L} # projection matrix to Ellipsoid coordinates
     data::D             # auxiliary data
-    (::Type{Ellipsoid{N,D}}){N,D}(c,ri2,p,data) = new{N,D}(c,ri2,p,data)  # inner constructor compatible with both v0.5 and v0.6
+    (::Type{Ellipsoid{N,D,L}}){N,D,L}(c,ri2,p,data) = new{N,D,L}(c,ri2,p,data)
 end
 
-function Ellipsoid(c::AbstractVector, d::AbstractVector, axes=eye(length(c),length(c)), # columns are axes unit vectors
-                   data=nothing)
-    length(c) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Ellipsoid{length(c),typeof(data)}(c, inv(axes ./ sqrt.(sum(abs2,axes,1))), (d*0.5) .^ -2, data)
-end
+Ellipsoid{N,D,L,R<:Real}(c::SVector{N}, d::SVector{N},
+                         axes::SMatrix{N,N,R,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
+                         data::D=nothing) =
+    Ellipsoid{N,D,L}(c, (d*0.5) .^ -2, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
+
+Ellipsoid(c::AbstractVector, d::AbstractVector, axes::AbstractMatrix=eye(length(c)), data=nothing) =
+    (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
 
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Ellipsoid, h)))))
