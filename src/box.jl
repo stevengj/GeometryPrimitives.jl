@@ -5,22 +5,22 @@ type Box{N,D,L} <: Shape{N,D}
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     data::D             # auxiliary data
+    (::Type{Box{N,D,L}}){N,D,L}(c,r,p,data) = new{N,D,L}(c,r,p,data)
 end
 
-function Box(c::AbstractVector, d::AbstractVector,
-             axes=eye(length(c)), # columns are axes unit vectors
-             data=nothing)
-    (N = length(c)) == length(d) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
-    return Box{N,typeof(data),N^2}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
-end
+Box{N,D,L,R<:Real}(c::SVector{N}, d::SVector{N},
+                   axes::SMatrix{N,N,R,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
+                   data::D=nothing) =
+    Box{N,D,L}(c, 0.5*d, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
 
-function Box(b::NTuple{2,AbstractVector},
-             axes=eye(length(b[1]),length(b[1])), # columns are axes unit vectors
-             data=nothing)
-    length(b[1]) == length(b[2]) == size(axes,1) == size(axes,2) || throw(DimensionMismatch())
+Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
+    (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
+
+function Box(b::NTuple{2,AbstractVector}, axes=eye(length(b[1])), data=nothing)
+    length(b[1]) == length(b[2]) || throw(DimensionMismatch())
     c = (b[1] + b[2]) / 2
     d = abs.(b[2] - b[1])
-    return Box(c,d,axes,data)
+    return Box(c, d, axes, data)
 end
 
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
