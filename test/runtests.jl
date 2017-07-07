@@ -148,7 +148,7 @@ end
             @test [0.2,0.25,1] ∉ c
             @test @inferred(normal([0.1,0.2,-1.3], c)) == [0,0,-1]
             @test normal([0.31, 0, 0.3], c) == [1,0,0]
-            @test @inferred(bounds(c)) ≈ ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
+            @test (bounds(c)) ≈ ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
             @test checkbounds(c)
             @test checkbounds(Cylinder([1,17,44], 0.3, [1,-2,3], 1.1))
         end
