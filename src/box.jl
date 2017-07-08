@@ -1,17 +1,19 @@
 export Box
 
-type Box{N,D,L} <: Shape{N}
+mutable struct Box{N,D,L} <: Shape{N}
     c::SVector{N,Float64} # box center
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     data::D             # auxiliary data
-    (::Type{Box{N,D,L}}){N,D,L}(c,r,p,data) = new{N,D,L}(c,r,p,data)
+    Box{N,D,L}(c,r,p,data) where {N,D,L} = new(c,r,p,data)
 end
 
-Box{N,D,L,R<:Real}(c::SVector{N}, d::SVector{N},
-                   axes::SMatrix{N,N,R,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
-                   data::D=nothing) =
-    Box{N,D,L}(c, 0.5*d, inv(axes ./ sqrt.(sum(abs2,axes,1))), data)
+Box(c::SVector{N}, d::SVector{N},
+    axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
+    data::D=nothing) where {N,D,L} =
+    Box{N,D,L}(c, 0.5d, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
+# Use this after StaticArrays issue 242 is fixed:
+#    Box{N,D,L}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
 
 Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
@@ -19,7 +21,7 @@ Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Box, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Box, h)))))
 
-function Base.in{N}(x::SVector{N}, b::Box{N})
+function Base.in(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
     for i = 1:N
         abs(d[i]) > b.r[i] && return false
@@ -27,7 +29,7 @@ function Base.in{N}(x::SVector{N}, b::Box{N})
     return true
 end
 
-function normal{N}(x::SVector{N}, b::Box{N})
+function normal(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
     (m,i) = findmin(abs.(abs.(d) - b.r))
     return SVector{N}(b.p[i,:]) * sign(d[i])
