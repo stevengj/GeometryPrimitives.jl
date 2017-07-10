@@ -18,7 +18,7 @@ function inbounds(x,lb,ub)
 end
 
 "check the bounding box of s with randomized trials"
-function checkbounds{N}(s::Shape{N}, ntrials=10^4)
+function checkbounds(s::Shape{N}, ntrials=10^4) where {N}
     lb,ub = bounds(s)
     for i = 1:ntrials
         x = randnb(lb,ub)
@@ -27,7 +27,7 @@ function checkbounds{N}(s::Shape{N}, ntrials=10^4)
     return true
 end
 
-function checktree{N}(t::KDTree{N}, slist::Vector{Shape{N}}, ntrials=10^3)
+function checktree(t::KDTree{N}, slist::Vector{Shape{N}}, ntrials=10^3) where {N}
     lb = SVector{N}(fill(Inf,N))
     ub = SVector{N}(fill(-Inf,N))
     for i in eachindex(slist)
