@@ -50,7 +50,7 @@ end
     @testset "Shape" begin
         @testset "Sphere" begin
             s = Sphere([3,4], 5)
-            @test @inferred(s == deepcopy(s))
+            @test s == deepcopy(s)
             @test hash(s) == hash(deepcopy(s))
             @test @inferred(ndims(s)) == 2
             @test @inferred([3,9] ∈ s)
@@ -63,10 +63,8 @@ end
 
         @testset "Box" begin
             b = Box([0,0], [2,4])  # specify center and radii
-            b′ = Box(([-1,-2],[1,2]))  # specify boundaries
-            @test @inferred(b == deepcopy(b))
+            @test b == deepcopy(b)
             @test hash(b) == hash(deepcopy(b))
-            @test b′ == b
             @test @inferred([0.3,-1.5] ∈ b)
             @test [0.3,-2.5] ∉ b
             @test @inferred(normal([1.1,0],b)) == [1,0]
@@ -90,7 +88,7 @@ end
             for j = 1:4; @test @inferred(Cin[:,j] ∈ br); end
             for j = 1:4; @test Cout[:,j] ∉ br; end
 
-            @test @inferred(br == deepcopy(br))
+            @test br == deepcopy(br)
             @test hash(br) == hash(deepcopy(br))
             @test @inferred(normal(R*[1.1r1, 0], br)) ≈ R*[1,0]
             @test normal(R*[-1.1r1, 0], br) ≈ R*[-1,0]
@@ -105,8 +103,8 @@ end
         end
 
         @testset "Ellipsoid" begin
-            e = Ellipsoid([0,0], [1,2])
-            @test @inferred(e == deepcopy(e))
+            e = Ellipsoid([0,0], [2,4])
+            @test e == deepcopy(e)
             @test hash(e) == hash(deepcopy(e))
             @test @inferred([0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e)
             @test [0.3,2*sqrt(1 - 0.3^2)+0.01] ∉ e
@@ -126,7 +124,7 @@ end
             bp1, bp2 = bp[:,1], bp[:,2]
 
             # Test the two bounding points are on the ellipsoid perimeter.
-            @test @inferred(er == deepcopy(er))
+            @test er == deepcopy(er)
             @test hash(er) == hash(deepcopy(er))
             @test (@inferred(one⁻ * bp1 ∈ er)) && (one⁻ * bp2 ∈ er)
             @test (one⁺ * bp1 ∉ er) && (one⁺ * bp2 ∉ er)
@@ -143,7 +141,7 @@ end
 
         @testset "Cylinder" begin
             c = Cylinder([0,0,0], 0.3, [0,0,1], 2.2)
-            @test @inferred(c == deepcopy(c))
+            @test c == deepcopy(c)
             @test hash(c) == hash(deepcopy(c))
             @test @inferred([0.2,0.2,1] ∈ c)
             @test SVector(0.2,0.2,1.2) ∉ c
@@ -169,4 +167,104 @@ end
         @test checktree(KDTree(s), s)
     end
 
+    @testset "vxlcut" begin
+        @testset "triangular cylinder 3D" begin
+            vxl = (SVector(0,0,0), SVector(1,1,1))
+            nout = SVector(1,1,0)
+
+            @test (r₀ = SVector(0.5,0,0); @inferred(volfrac(vxl, nout, r₀)) ≈ 0.125)
+            @test (r₀ = SVector(0.5,0,0); volfrac(vxl, -nout, r₀) ≈ 0.875)
+            @test (r₀ = SVector(1,0,0); volfrac(vxl, nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0,0); volfrac(vxl, -nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0,0); nout = SVector(1,2,0); volfrac(vxl, nout, r₀) ≈ 0.25)
+            @test (r₀ = SVector(1,0,0); nout = SVector(1,2,0); volfrac(vxl, -nout, r₀) ≈ 0.75)
+        end
+
+        @testset "triangular cylinder 2D" begin
+            vxl = (SVector(0,0), SVector(1,1))
+            nout = SVector(1,1)
+
+            @test (r₀ = SVector(0.5,0); @inferred(volfrac(vxl, nout, r₀)) ≈ 0.125)
+            @test (r₀ = SVector(0.5,0); volfrac(vxl, -nout, r₀) ≈ 0.875)
+            @test (r₀ = SVector(1,0); volfrac(vxl, nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0); volfrac(vxl, -nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0); nout = SVector(1,2); volfrac(vxl, nout, r₀) ≈ 0.25)
+            @test (r₀ = SVector(1,0); nout = SVector(1,2); volfrac(vxl, -nout, r₀) ≈ 0.75)
+        end
+
+        @testset "quadrangular cylinder 3D" begin
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = mean(vxl)
+                    nout = randn(3)
+                    nout[rand(1:3)] = 0
+                    result &= @inferred(volfrac(vxl, SVector{3}(nout), r₀)) ≈ 0.5
+                end
+                result
+            end
+        end
+
+        @testset "quadrangular cylinder 2D" begin
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(2)), @SVector(rand(2)))
+                    r₀ = mean(vxl)
+                    nout = @SVector randn(2)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5
+                end
+                result
+            end
+        end
+
+        @testset "general cases" begin
+            # Test random cases.
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = mean(vxl)
+                    nout = @SVector randn(3)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5
+                end
+                result
+            end
+
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = @SVector randn(3)
+                    nout = @SVector randn(3)
+                    result &= (volfrac(vxl, nout, r₀) + volfrac(vxl, -nout, r₀) ≈ 1)
+                end
+                result
+            end
+
+            # Test boundary cases.
+            vxl = (SVector(0,0,0), SVector(1,1,1))
+            r₀ = SVector(0,0,0)
+            @test (nout = SVector(1,0,0); volfrac(vxl, nout, r₀) ≈ 0)  # completely outside
+            @test (nout = SVector(-1,0,0); volfrac(vxl, nout, r₀) ≈ 1)  # completely inside
+            @test (nout = SVector(-1,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_tricyl()
+            @test (nout = SVector(-1,-1,1); volfrac(vxl, nout, r₀) ≈ 5/6)  # rvol_gensect()
+            @test (nout = SVector(1,-2,1); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadsect()
+            r₀ = SVector(0.5,0.5,0)
+            @test (nout = SVector(-2,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadcyl()
+
+            # Test rvol_quadsect() for nontrivial cases.
+            vxl = (SVector(0,0,0), SVector(1,1,2))
+            r₀ = SVector(0.5, 0.5, 0.5)
+            @test begin
+                result = true
+                for i = 1:100
+                    nout = SVector(randn()/20, randn()/20, 1)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5/2
+                end
+                result
+            end
+        end
+    end
 end
