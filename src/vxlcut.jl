@@ -19,52 +19,52 @@ function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of
     # of the voxel are indexed 1 through 8 in the order of (---), (+--), (-+-), (++-),
     # (--+), (+-+), (-++), (+++), where, e.g., (+--) indicates the corner at the
     # +x, -y, -z corner.
-    vcbits = 0x00
+    cbits = 0x00
     bit = 0x01
     for sz = NP, sy = NP, sx = NP
         r = corner(vxl, sx, sy, sz)
         if nout⋅r ≤ nr₀  # corner is inside (nout is outward normal)
-            vcbits |= bit
+            cbits |= bit
         end
         bit <<= 1
     end
 
-    return vcbits
+    return cbits
 end
 
-function isquadsect(vcbits::UInt8)
+function isquadsect(cbits::UInt8)
     # Determine if the corner contained-ness bit array corresponds to the case where
     # the plane crosses one of the three sets of four parallel edges of the voxel.
 
-    return vcbits==0x0F || vcbits==~0x0F || vcbits==0x33 || vcbits==~0x33 || vcbits==0x55 || vcbits==~0x55
+    return cbits==0x0F || cbits==~0x0F || cbits==0x33 || cbits==~0x33 || cbits==0x55 || cbits==~0x55
 
     # Equivalent to
-    # n = count_ones(vcbits)
-    # m = count_ones(vcbits & 0x0F)
+    # n = count_ones(cbits)
+    # m = count_ones(cbits & 0x0F)
     # return n==4 && iseven(m)
 end
 
-function edgedir_quadsect(vcbits::UInt8)
+function edgedir_quadsect(cbits::UInt8)
     # For the cases where the plane crosses a set of four parallel edges of the voxel,
     # determine which direction those edges lie.
 
-    if vcbits==0x0F || vcbits==~0x0F
+    if cbits==0x0F || cbits==~0x0F
         dir = Z
-    elseif vcbits==0x33 || vcbits==~0x33
+    elseif cbits==0x33 || cbits==~0x33
         dir = Y
     else
-        assert(vcbits==0x55 || vcbits==~0x55)
+        assert(cbits==0x55 || cbits==~0x55)
         dir = X
     end
 
     return dir
 end
 
-function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, vcbits::UInt8)
+function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
     # Return the volume fraction for the case where the plane croses a set of four parallel
     # edges.
 
-    const w = edgedir_quadsect(vcbits)
+    const w = edgedir_quadsect(cbits)
     const ∆w = vxl[P][w] - vxl[N][w]
 
     const u, v, ~ = UVW[w]
@@ -79,11 +79,11 @@ function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, vcbit
     return abs(mean_cepts - vxl[sw][w]/∆w)
 end
 
-function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, vcbits::UInt8)
+function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
     # Calculate the volume fraction of most general cases, by cutting out corners from a
     # triangular pyramid.
-    # Assume count_ones(vcbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
-    # vcbits.
+    # Assume count_ones(cbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
+    # cbits.
 
     const s = (nout.<0) .+ 1
     const c = corner(vxl, s...)  # corner coordinates
@@ -139,20 +139,20 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
     # Return the volume fraction rvol = vol(voxel ⋂ half-space) / vol(voxel).
 
     const nr₀ = nout⋅r₀
-    const vcbits = corner_bits(vxl, nout, nr₀)
-    const nvc = count_ones(vcbits)  # number of vertices contained
+    const cbits = corner_bits(vxl, nout, nr₀)
+    const nvc = count_ones(cbits)  # number of vertices contained
 
     if nvc == 8  # voxel is inside half-space
         rvol = 1.
     elseif nvc == 0  # voxel is outside half-space
         rvol = 0.
-    elseif isquadsect(vcbits) # plane crosses a set of four parallel edges of voxel
-        rvol = rvol_quadsect(vxl, nout, nr₀, vcbits)
+    elseif isquadsect(cbits) # plane crosses a set of four parallel edges of voxel
+        rvol = rvol_quadsect(vxl, nout, nr₀, cbits)
     elseif nvc ≤ 4 # general cases with nvc ≤ 4
-        rvol = rvol_gensect(vxl, nout, nr₀, vcbits)
+        rvol = rvol_gensect(vxl, nout, nr₀, cbits)
     else  # general cases with nvc ≥ 5
         assert(nvc ≥ 5)
-        rvol = 1. - rvol_gensect(vxl, .-nout, -nr₀, ~vcbits)
+        rvol = 1. - rvol_gensect(vxl, .-nout, -nr₀, ~cbits)
     end
 
     return rvol
