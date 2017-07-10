@@ -17,4 +17,6 @@ include("cylinder.jl")
 
 include("kdtree.jl")
 
+include("vxlcut.jl")
+
 end # module
