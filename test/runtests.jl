@@ -167,4 +167,104 @@ end
         @test checktree(KDTree(s), s)
     end
 
+    @testset "vxlcut" begin
+        @testset "triangular cylinder 3D" begin
+            vxl = (SVector(0,0,0), SVector(1,1,1))
+            nout = SVector(1,1,0)
+
+            @test (r₀ = SVector(0.5,0,0); @inferred(volfrac(vxl, nout, r₀)) ≈ 0.125)
+            @test (r₀ = SVector(0.5,0,0); volfrac(vxl, -nout, r₀) ≈ 0.875)
+            @test (r₀ = SVector(1,0,0); volfrac(vxl, nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0,0); volfrac(vxl, -nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0,0); nout = SVector(1,2,0); volfrac(vxl, nout, r₀) ≈ 0.25)
+            @test (r₀ = SVector(1,0,0); nout = SVector(1,2,0); volfrac(vxl, -nout, r₀) ≈ 0.75)
+        end
+
+        @testset "triangular cylinder 2D" begin
+            vxl = (SVector(0,0), SVector(1,1))
+            nout = SVector(1,1)
+
+            @test (r₀ = SVector(0.5,0); @inferred(volfrac(vxl, nout, r₀)) ≈ 0.125)
+            @test (r₀ = SVector(0.5,0); volfrac(vxl, -nout, r₀) ≈ 0.875)
+            @test (r₀ = SVector(1,0); volfrac(vxl, nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0); volfrac(vxl, -nout, r₀) ≈ 0.5)
+            @test (r₀ = SVector(1,0); nout = SVector(1,2); volfrac(vxl, nout, r₀) ≈ 0.25)
+            @test (r₀ = SVector(1,0); nout = SVector(1,2); volfrac(vxl, -nout, r₀) ≈ 0.75)
+        end
+
+        @testset "quadrangular cylinder 3D" begin
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = mean(vxl)
+                    nout = randn(3)
+                    nout[rand(1:3)] = 0
+                    result &= @inferred(volfrac(vxl, SVector{3}(nout), r₀)) ≈ 0.5
+                end
+                result
+            end
+        end
+
+        @testset "quadrangular cylinder 2D" begin
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(2)), @SVector(rand(2)))
+                    r₀ = mean(vxl)
+                    nout = @SVector randn(2)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5
+                end
+                result
+            end
+        end
+
+        @testset "general cases" begin
+            # Test random cases.
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = mean(vxl)
+                    nout = @SVector randn(3)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5
+                end
+                result
+            end
+
+            @test begin
+                result = true
+                for i = 1:100
+                    vxl = (-@SVector(rand(3)), @SVector(rand(3)))
+                    r₀ = @SVector randn(3)
+                    nout = @SVector randn(3)
+                    result &= (volfrac(vxl, nout, r₀) + volfrac(vxl, -nout, r₀) ≈ 1)
+                end
+                result
+            end
+
+            # Test boundary cases.
+            vxl = (SVector(0,0,0), SVector(1,1,1))
+            r₀ = SVector(0,0,0)
+            @test (nout = SVector(1,0,0); volfrac(vxl, nout, r₀) ≈ 0)  # completely outside
+            @test (nout = SVector(-1,0,0); volfrac(vxl, nout, r₀) ≈ 1)  # completely inside
+            @test (nout = SVector(-1,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_tricyl()
+            @test (nout = SVector(-1,-1,1); volfrac(vxl, nout, r₀) ≈ 5/6)  # rvol_gensect()
+            @test (nout = SVector(1,-2,1); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadsect()
+            r₀ = SVector(0.5,0.5,0)
+            @test (nout = SVector(-2,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadcyl()
+
+            # Test rvol_quadsect() for nontrivial cases.
+            vxl = (SVector(0,0,0), SVector(1,1,2))
+            r₀ = SVector(0.5, 0.5, 0.5)
+            @test begin
+                result = true
+                for i = 1:100
+                    nout = SVector(randn()/20, randn()/20, 1)
+                    result &= @inferred(volfrac(vxl, nout, r₀)) ≈ 0.5/2
+                end
+                result
+            end
+        end
+    end
 end
