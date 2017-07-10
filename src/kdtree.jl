@@ -13,20 +13,20 @@ because a given shape may be in both branches of the tree.  (Normally,
 K-D trees are used for nearest-neighbor searches for a list of *points*,
 not shapes of nonzero size.)
 """
-type KDTree{K}
+mutable struct KDTree{K}
     s::Vector{Shape{K}}
     ix::Int
     x::Float64
     left::KDTree  # shapes ≤ x in coordinate ix
     right::KDTree # shapes > x in coordinate ix
-    (::Type{KDTree{K}}){K}(s::AbstractVector{Shape{K}}) = new{K}(s, 0)  # inner constructor compatible with both v0.5 and v0.6
-    function (::Type{KDTree{K}}){K}(x::Real, ix::Integer, left::KDTree{K}, right::KDTree{K})  # inner constructor compatible with both v0.5 and v0.6
+    KDTree{K}(s::AbstractVector{Shape{K}}) where {K} = new(s, 0)
+    function KDTree{K}(ix::Integer, x::Real, left::KDTree{K}, right::KDTree{K}) where {K}
         1 ≤ ix ≤ K || throw(BoundsError())
-        new{K}(Shape{K}[], ix, x, left, right)
+        new(Shape{K}[], ix, x, left, right)
     end
 end
 
-Base.ndims{K}(::KDTree{K}) = K
+Base.ndims(::KDTree{K}) where {K} = K
 
 """
     KDTree(s::AbstractVector{Shape{K}})
@@ -37,7 +37,7 @@ Construct a K-D tree (`KDTree`) representation of a list of
 When searching the tree, shapes that appear earlier in `s`
 take precedence over shapes that appear later.
 """
-function KDTree{K}(s::AbstractVector{Shape{K}})
+function KDTree(s::AbstractVector{Shape{K}}) where {K}
     (length(s) <= 4 || K == 0) && return KDTree{K}(s)
 
     # figure out the best dimension ix to divide over,
@@ -75,12 +75,12 @@ function KDTree{K}(s::AbstractVector{Shape{K}})
         end
     end
 
-    return KDTree{K}(x, ix, KDTree(sl), KDTree(sr))
+    return KDTree{K}(ix, x, KDTree(sl), KDTree(sr))
 end
 
 depth(kd::KDTree) = kd.ix == 0 ? 0 : max(depth(kd.left), depth(kd.right)) + 1
 
-Base.show{K}(io::IO, kd::KDTree{K}) = print(io, "KDTree{$K} of depth ", depth(kd))
+Base.show(io::IO, kd::KDTree{K}) where {K} = print(io, "KDTree{$K} of depth ", depth(kd))
 
 function _show(io::IO, kd::KDTree, indent)
     indentstr = " "^indent
@@ -94,12 +94,12 @@ function _show(io::IO, kd::KDTree, indent)
     end
 end
 
-function Base.show{K}(io::IO, ::MIME"text/plain", kd::KDTree{K})
+function Base.show(io::IO, ::MIME"text/plain", kd::KDTree{K}) where {K}
     println(io, kd, ':')
     _show(io, kd, 0)
 end
 
-function Base.findin{N}(p::SVector{N}, s::Vector{Shape{N}})
+function Base.findin(p::SVector{N}, s::Vector{Shape{N}}) where {N}
     for i in eachindex(s)
         if p ∈ s[i]
             return Nullable{Shape{N}}(s[i])
@@ -108,7 +108,7 @@ function Base.findin{N}(p::SVector{N}, s::Vector{Shape{N}})
     return Nullable{Shape{N}}()
 end
 
-function Base.findin{N}(p::SVector{N}, kd::KDTree{N})
+function Base.findin(p::SVector{N}, kd::KDTree{N}) where {N}
     if isempty(kd.s)
         if p[kd.ix] ≤ kd.x
             return findin(p, kd.left)
@@ -126,5 +126,5 @@ end
 Return a `Nullable` container of the first shape in `kd` that contains
 the point `p`, or an `isnull` container if no shape was found.
 """
-Base.findin{N}(p::AbstractVector, kd::KDTree{N}) = findin(SVector{N}(p), kd)
-Base.findin{N}(p::AbstractVector, s::Vector{Shape{N}}) = findin(SVector{N}(p), s)
+Base.findin(p::AbstractVector, kd::KDTree{N}) where {N} = findin(SVector{N}(p), kd)
+Base.findin(p::AbstractVector, s::Vector{Shape{N}}) where {N} = findin(SVector{N}(p), s)
