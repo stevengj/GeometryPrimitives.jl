@@ -18,6 +18,9 @@ Box(c::SVector{N}, d::SVector{N},
 Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
 
+Box(b::NTuple{2,AbstractVector}, axes=eye(length(b[1])), data=nothing) =
+    Box((b[1] + b[2]) / 2, abs.(b[2] - b[1]), axes, data)  # b[1], b[2]: two ends of solid diagonal
+
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Box, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Box, h)))))
 
