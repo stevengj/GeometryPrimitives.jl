@@ -15,7 +15,7 @@ function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of
     # Calculate the bit array that indicates corner contained-ness.
 
     # The bit array is 8 bits (= 1 byte).  The kth bit is 1 if the kth corner is
-    # contained in the half space defined by the plane, an 0 otherwise.  The 8 vertices
+    # contained in the half space defined by the plane, an 0 otherwise.  The 8 corners
     # of the voxel are indexed 1 through 8 in the order of (---), (+--), (-+-), (++-),
     # (--+), (+-+), (-++), (+++), where, e.g., (+--) indicates the corner at the
     # +x, -y, -z corner.
@@ -140,18 +140,18 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
 
     const nr₀ = nout⋅r₀
     const cbits = corner_bits(vxl, nout, nr₀)
-    const nvc = count_ones(cbits)  # number of vertices contained
+    const n_corners = count_ones(cbits)  # number of corners contained
 
-    if nvc == 8  # voxel is inside half-space
+    if n_corners == 8  # voxel is inside half-space
         rvol = 1.
-    elseif nvc == 0  # voxel is outside half-space
+    elseif n_corners == 0  # voxel is outside half-space
         rvol = 0.
     elseif isquadsect(cbits) # plane crosses a set of four parallel edges of voxel
         rvol = rvol_quadsect(vxl, nout, nr₀, cbits)
-    elseif nvc ≤ 4 # general cases with nvc ≤ 4
+    elseif n_corners ≤ 4 # general cases with n_corners ≤ 4
         rvol = rvol_gensect(vxl, nout, nr₀, cbits)
-    else  # general cases with nvc ≥ 5
-        assert(nvc ≥ 5)
+    else  # general cases with n_corners ≥ 5
+        assert(n_corners ≥ 5)
         rvol = 1. - rvol_gensect(vxl, .-nout, -nr₀, ~cbits)
     end
 
