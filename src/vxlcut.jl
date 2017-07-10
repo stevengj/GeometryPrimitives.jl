@@ -9,7 +9,7 @@ const NP = (N, P)
 corner(vxl::NTuple{2,SVector{3,<:Real}}, sx::Integer, sy::Integer, sz::Integer) =
     @SVector [vxl[sx][X], vxl[sy][Y], vxl[sz][Z]]
 
-function calc_vcbits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of voxel
+function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of voxel
                      nout::SVector{3}, # unit outward normal of plane
                      nr₀)  # equation of plane: nout⋅(r - r₀) = 0, or nout⋅r = nr₀
     # Calculate the bit array that indicates corner contained-ness.
@@ -139,7 +139,7 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
     # Return the volume fraction rvol = vol(voxel ⋂ half-space) / vol(voxel).
 
     const nr₀ = nout⋅r₀
-    const vcbits = calc_vcbits(vxl, nout, nr₀)
+    const vcbits = corner_bits(vxl, nout, nr₀)
     const nvc = count_ones(vcbits)  # number of vertices contained
 
     if nvc == 8  # voxel is inside half-space
