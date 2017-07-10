@@ -86,7 +86,7 @@ function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits:
     # cbits.
 
     const s = (nout.<0) .+ 1
-    const c = corner(vxl, s...)  # corner coordinates
+    const c = corner(vxl, s[X], s[Y], s[Z])  # corner coordinates
     const ∆ = vxl[P] - vxl[N]  # vxl edges
     const nc = nout .* c
     rmax, rmid, rmin =  abs.((((nr₀-sum(nc)) .+ nc) ./ nout - c) ./ ∆) # (lengths from corner to intercetps) / (voxel edges)
