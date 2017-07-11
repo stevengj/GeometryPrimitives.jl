@@ -1,6 +1,6 @@
 export Cylinder
 
-mutable struct Cylinder{N,D} <: Shape{N}
+mutable struct Cylinder{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # Cylinder center
     r::Float64          # radius
     a::SVector{N,Float64}   # axis unit vector

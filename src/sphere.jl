@@ -1,6 +1,6 @@
 export Sphere
 
-mutable struct Sphere{N,D} <: Shape{N}
+mutable struct Sphere{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # sphere center
     r::Float64          # radius
     data::D             # auxiliary data

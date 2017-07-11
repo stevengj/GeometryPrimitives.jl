@@ -2,7 +2,7 @@ module GeometryPrimitives
 
 using Compat, StaticArrays
 
-abstract type Shape{N} end # a solid geometric shape in N dimensions
+abstract type Shape{N,D} end # a solid geometric shape in N dimensions
 Base.ndims(o::Shape{N}) where {N} = N
 
 export Shape, normal, bounds
