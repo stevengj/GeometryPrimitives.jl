@@ -6,7 +6,7 @@ mutable struct Cylinder{N,D} <: Shape{N,D}
     a::SVector{N,Float64}   # axis unit vector
     h2::Float64         # height * 0.5
     data::D             # auxiliary data
-    Cylinder{N,D}(c,r,a,h2,data) where {N,D} = new(c,r,a,h2,data)
+    Cylinder{N,D}(c,r,a,h2,data) where {N,D} = new(c,r,a,h2,data)  # suppress default outer constructor
 end
 
 Cylinder(c::SVector{N}, r::Real, a::SVector{N}, h::Real=Inf, data::D=nothing) where {N,D} =
@@ -15,8 +15,8 @@ Cylinder(c::SVector{N}, r::Real, a::SVector{N}, h::Real=Inf, data::D=nothing) wh
 Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data=nothing) =
     (N = length(c); Cylinder(SVector{N}(c), r, SVector{N}(a), h, data))
 
-Base.:(==)(s1::Cylinder, s2::Cylinder) = s1.c==s2.c && s1.a==s2.a && s1.r==s2.r && s1.h2==s2.h2 && s1.data==s2.data
-Base.hash(s::Cylinder, h::UInt) = hash(s.c, hash(s.a, hash(s.r, hash(s.h2, hash(s.data, hash(:Cylinder, h))))))
+Base.:(==)(s1::Cylinder, s2::Cylinder) = s1.c==s2.c && s1.r==s2.r && s1.a==s2.a && s1.h2==s2.h2 && s1.data==s2.data
+Base.hash(s::Cylinder, h::UInt) = hash(s.c, hash(s.r, hash(s.a, hash(s.h2, hash(s.data, hash(:Cylinder, h))))))
 
 function Base.in(x::SVector{N}, s::Cylinder{N}) where {N}
     d = x - s.c
