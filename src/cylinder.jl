@@ -39,7 +39,7 @@ function endcircles(s::Cylinder{2})
     b = rotate2 * s.a
     axes = @SMatrix [s.a[1] b[1]; s.a[2] b[2]]
     return (Ellipsoid(s.c + s.a*s.h2, SVector(0.0, s.r), axes),
-           Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r), axes))
+            Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r), axes))
 end
 
 function endcircles(s::Cylinder{3})
@@ -47,9 +47,8 @@ function endcircles(s::Cylinder{3})
     b1 = cross(s.a, u)
     b2 = cross(b1, s.a)
     axes = @SMatrix [s.a[1] b1[1] b2[1]; s.a[2] b1[2] b2[2]; s.a[3] b1[3] b2[3]]
-    et = Ellipsoid(s.c + s.a*s.h2, SVector(0.0, s.r, s.r), axes)::Ellipsoid{3,Void,9}  # top disk
-    eb = Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r, s.r), axes)::Ellipsoid{3,Void,9}  # bottom disk
-    return (et, eb)
+    return (Ellipsoid(s.c + s.a*s.h2, SVector(0.0, s.r, s.r), axes), # top disk
+            Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r, s.r), axes))  # bottom disk
 end
 
 function bounds(s::Cylinder)
