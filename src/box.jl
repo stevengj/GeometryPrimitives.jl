@@ -18,13 +18,6 @@ Box(c::SVector{N}, d::SVector{N},
 Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
 
-function Box(b::NTuple{2,AbstractVector}, axes=eye(length(b[1])), data=nothing)
-    length(b[1]) == length(b[2]) || throw(DimensionMismatch())
-    c = (b[1] + b[2]) / 2
-    d = abs.(b[2] - b[1])
-    return Box(c, d, axes, data)
-end
-
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Box, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Box, h)))))
 
