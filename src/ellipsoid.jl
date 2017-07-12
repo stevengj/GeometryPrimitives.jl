@@ -8,15 +8,17 @@ mutable struct Ellipsoid{N,D,L} <: Shape{N,D}
     Ellipsoid{N,D,L}(c,ri2,p,data) where {N,D,L} = new(c,ri2,p,data)
 end
 
-Ellipsoid(c::SVector{N}, d::SVector{N},
+Ellipsoid(c::SVector{N}, r::SVector{N},
           axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
           data::D=nothing) where {N,D,L} =
-    Ellipsoid{N,D,L}(c, (0.5d) .^ -2, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
+    Ellipsoid{N,D,L}(c, float.(r).^-2, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
 # Use this after StaticArrays issue 242 is fixed:
-#    Ellipsoid{N,D,L}(c, (0.5d) .^ -2, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+#    Ellipsoid{N,D,L}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
 
-Ellipsoid(c::AbstractVector, d::AbstractVector, axes::AbstractMatrix=eye(length(c)), data=nothing) =
-    (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
+Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=eye(length(c)), data=nothing) =
+    (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes), data))
+
+Ellipsoid(b::Box{N,<:Any,L}, data::D=nothing) where {N,D,L} = Ellipsoid{N,D,L}(b.c, (b.r).^-2, b.p, data)
 
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Ellipsoid, h)))))
