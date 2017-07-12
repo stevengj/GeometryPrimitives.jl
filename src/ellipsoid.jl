@@ -5,7 +5,7 @@ mutable struct Ellipsoid{N,D,L} <: Shape{N,D}
     ri2::SVector{N,Float64} # inverse square of "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to Ellipsoid coordinates
     data::D             # auxiliary data
-    Ellipsoid{N,D,L}(c,ri2,p,data) where {N,D,L} = new(c,ri2,p,data)
+    Ellipsoid{N,D,L}(c,ri2,p,data) where {N,D,L} = new(c,ri2,p,data)  # suppress default outer constructor
 end
 
 Ellipsoid(c::SVector{N}, r::SVector{N},

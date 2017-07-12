@@ -4,7 +4,7 @@ mutable struct Sphere{N,D} <: Shape{N,D}
     c::SVector{N,Float64} # sphere center
     r::Float64          # radius
     data::D             # auxiliary data
-    Sphere{N,D}(c,r,data) where {N,D} = new(c,r,data)
+    Sphere{N,D}(c,r,data) where {N,D} = new(c,r,data)  # suppress default outer constructor
 end
 
 Sphere(c::SVector{N}, r::Real, data::D=nothing) where {N,D} = Sphere{N,D}(c, r, data)

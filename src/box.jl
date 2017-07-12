@@ -5,7 +5,7 @@ mutable struct Box{N,D,L} <: Shape{N,D}
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     data::D             # auxiliary data
-    Box{N,D,L}(c,r,p,data) where {N,D,L} = new(c,r,p,data)
+    Box{N,D,L}(c,r,p,data) where {N,D,L} = new(c,r,p,data)  # suppress default outer constructor
 end
 
 Box(c::SVector{N}, d::SVector{N},
