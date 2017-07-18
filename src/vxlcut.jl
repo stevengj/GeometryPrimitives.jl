@@ -7,7 +7,7 @@ const N, P = 1, 2  # negative, positive
 const NP = (N, P)
 
 corner(vxl::NTuple{2,SVector{3,<:Real}}, sx::Integer, sy::Integer, sz::Integer) =
-    @SVector [vxl[sx][X], vxl[sy][Y], vxl[sz][Z]]
+    SVector(vxl[sx][X], vxl[sy][Y], vxl[sz][Z])
 
 function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of voxel
                      nout::SVector{3}, # unit outward normal of plane
@@ -159,6 +159,6 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
 end
 
 volfrac(vxl::NTuple{2,SVector{2}}, nout::SVector{2}, r₀::SVector{2}) =
-    volfrac((@SVector([vxl[N][1],vxl[N][2],0]), @SVector([vxl[P][1],vxl[P][2],1])),
-            @SVector([nout[1], nout[2], 0]),
-            @SVector([r₀[1], r₀[2], 0]))
+    volfrac((SVector(vxl[N][1],vxl[N][2],0), SVector(vxl[P][1],vxl[P][2],1)),
+            SVector(nout[1], nout[2], 0),
+            SVector(r₀[1], r₀[2], 0))
