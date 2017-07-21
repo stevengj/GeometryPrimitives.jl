@@ -67,7 +67,7 @@ function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits
     const w = edgedir_quadsect(cbits)
     const ∆w = vxl[P][w] - vxl[N][w]
 
-    const u, v, ~ = UVW[w]
+    const u, v, _w = UVW[w]
     const nu, nv, nw = nout[u], nout[v], nout[w]
     const mean_cepts = 4nr₀
     for sv = NP, su = NP

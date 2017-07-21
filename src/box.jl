@@ -31,7 +31,7 @@ end
 
 function normal(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
-    ~, i = findmin(abs.(abs.(d) - b.r))
+    _m, i = findmin(abs.(abs.(d) - b.r))
     return normalize(b.p[i,:] * sign(d[i]))  # b.p[i,:] is non-unit for non-rectangular box
 end
 
