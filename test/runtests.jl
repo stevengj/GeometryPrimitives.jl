@@ -102,6 +102,13 @@ end
             @test checkbounds(br)
         end
 
+        @testset "Box, skewed" begin
+            ax1, ax2 = [1,-1], [0,1]
+            r1, r2 = 1, 1  # "radii"
+            bs = Box([0,0], [2r1, 2r2], [ax1 ax2])
+            @test norm(normal([0,1], bs)) ≈ 1   
+        end
+
         @testset "Ellipsoid" begin
             e = Ellipsoid([0,0], [1,2])
             @test e == deepcopy(e)

@@ -31,8 +31,8 @@ end
 
 function normal(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
-    (m,i) = findmin(abs.(abs.(d) - b.r))
-    return SVector{N}(b.p[i,:]) * sign(d[i])
+    ~, i = findmin(abs.(abs.(d) - b.r))
+    return normalize(b.p[i,:] * sign(d[i]))  # b.p[i,:] is non-unit for non-rectangular box
 end
 
 signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
