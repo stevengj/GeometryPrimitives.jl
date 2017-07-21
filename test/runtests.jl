@@ -103,10 +103,15 @@ end
         end
 
         @testset "Box, skewed" begin
-            ax1, ax2 = [1,-1], [0,1]
+            ax1, ax2 = normalize.(([1,-1], [0,1]))
             r1, r2 = 1, 1  # "radii"
             bs = Box([0,0], [2r1, 2r2], [ax1 ax2])
-            @test norm(normal([0,1], bs)) ≈ 1   
+            @test norm(normal([0,1], bs)) ≈ 1
+
+            xmax = (r1*ax1+r2*ax2)[1]
+            ymax = (r1*ax2-r2*ax1)[2]
+            @test @inferred(bounds(bs)) ≈ (-[xmax,ymax],[xmax,ymax])
+            @test checkbounds(bs)
         end
 
         @testset "Ellipsoid" begin
