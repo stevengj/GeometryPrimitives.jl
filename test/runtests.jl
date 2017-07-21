@@ -109,7 +109,7 @@ end
             @test norm(normal([0,1], bs)) ≈ 1
 
             xmax = (r1*ax1+r2*ax2)[1]
-            ymax = (r1*ax2-r2*ax1)[2]
+            ymax = (r2*ax2-r1*ax1)[2]
             @test @inferred(bounds(bs)) ≈ (-[xmax,ymax],[xmax,ymax])
             @test checkbounds(bs)
         end
