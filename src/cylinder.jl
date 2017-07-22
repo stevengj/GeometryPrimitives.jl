@@ -25,12 +25,21 @@ function Base.in(x::SVector{N}, s::Cylinder{N}) where {N}
     return sum(abs2,d - p*s.a) ≤ s.r^2
 end
 
-function normal(x::SVector{N}, s::Cylinder{N}) where {N}
+function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     d = x - s.c
-    p = dot(d, s.a)
-    p > s.h2 && return s.a
-    p < -s.h2 && return -s.a
-    return normalize(d - p*s.a)
+    p = d ⋅ s.a
+    q = d - p*s.a
+    lp = abs(p)
+    lq = norm(q)
+    if abs(lp-s.h2) < abs(lq-s.r)
+        nout = sign(p)*s.a
+        l∆x = s.h2 - lp
+    else
+        l∆x = s.r - lq
+        nout = q / lq
+    end
+
+    return x + l∆x*nout, nout
 end
 
 const rotate2 = @SMatrix [0.0 1.0; -1.0 0.0] # 2x2 90° rotation matrix

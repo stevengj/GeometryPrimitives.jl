@@ -23,9 +23,33 @@ Ellipsoid(b::Box{N,<:Any,L}, data::D=nothing) where {N,D,L} = Ellipsoid{N,D,L}(b
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Ellipsoid, h)))))
 
-Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
+Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0  # change this using ⋅
 
-normal(x::SVector{N}, b::Ellipsoid{N}) where {N} = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
+function surfpt_nearby(x::SVector{N}, b::Ellipsoid{N}) where {N}
+    # For a given point x and equation of ellipsoid f(x) = 1, find t such that x₀ = x + t*∇f(x)
+    # is on the ellipsoid.  Eventually this reduces to a quadratic equation for t.  The
+    # following is evaluation of the quadratic formula in a numerically stable way.
+    px = b.p * (x - b.c)  # in ellipsoid's coordinates
+    px2 = px.^2
+
+    px²r⁻² = px2 ⋅ b.ri2
+    px²r⁻⁴ = px2 ⋅ (b.ri2.^2)
+    px²r⁻⁶ = px2 ⋅ (b.ri2.^3)
+
+    q24 = (px²r⁻² - 1) / px²r⁻⁴
+    q64 = px²r⁻⁶ / px²r⁻⁴
+
+    t = -q24 / (1 + √(1 - q24 * q64))
+
+    # From t, recover x₀ = x + t*∇f(x).
+    px₀ = (t*b.ri2 + 1) .* px  # surface point in ellipsoid coordinates
+
+    # Transform back to the original coordinates.
+    x₀ = At_mul_B(b.p, px₀) + b.c
+    nout = normalize(At_mul_B(b.p, px .* b.ri2))
+
+    return x₀, nout
+end
 
 function boundpts(b::Ellipsoid{N}) where {N}
     # Return the points tangential to the bounding box.
