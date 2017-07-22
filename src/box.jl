@@ -40,11 +40,11 @@ signmatrix(b::Shape{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
 signmatrix(b::Shape{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
 
 function bounds(b::Box)
-    # Below, b.p' .* b.r' would have been conceptually better because its "columns"
+    # Below, inv(b.p) .* b.r' would have been conceptually better because its columns
     # are scaled axes vectors.  However, then the result is not SMatrix because b.r'
     # is not SVector.  Then, we cannot use maximum(..., Val{2}), which is type-stable
-    # for SMatrix.  A workaround is to calculate b.p .* b.r and take transpose.
-    A = (b.p .* b.r)'  # SMatrix
+    # for SMatrix.  A workaround is to calculate inv(b.p') .* b.r and take transpose.
+    A = (inv(b.p') .* b.r)'  # SMatrix
 
     m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
