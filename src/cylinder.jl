@@ -31,8 +31,8 @@ function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     q = d - p*s.a
     lp = abs(p)
     lq = norm(q)
-    if abs(lp-s.h2) < abs(lq-s.r)
-        nout = sign(p)*s.a
+    if abs(lp-s.h2) < abs(lq-s.r) || lq == 0
+        nout = p < 0 ? -s.a : s.a
         l∆x = s.h2 - lp
     else
         l∆x = s.r - lq
