@@ -57,7 +57,7 @@ end
             @test @inferred([3,9] ∈ s)
             @test [3,9.1] ∉ s
 
-            @test @inferred(surfpt_nearby([3,4],s)) == ([3,9],[0,1])  # handle point at center properly
+            @test @inferred(surfpt_nearby([3,4],s)) == ([8,4],[1,0])  # handle point at center properly
             @test all([surfpt_nearby([3+ρ*sx*5,4],s)[1] ≈ [3+sx*5,4] for ρ = (one⁻⁻,1,one⁺⁺), sx = (-1,1)])
             @test all([surfpt_nearby([3,4+ρ*sy*5],s)[1] ≈ [3,4+sy*5] for ρ = (one⁻⁻,1,one⁺⁺), sy = (-1,1)])
             @test all([surfpt_nearby([3+ρ*sx*5/√2,4+ρ*sy*5/√2],s)[1] ≈ [3+sx*5/√2,4+sy*5/√2]
@@ -78,7 +78,8 @@ end
             @test @inferred([0.3,-1.5] ∈ b)
             @test [0.3,-2.5] ∉ b
 
-            @test all([@inferred(surfpt_nearby([ρ*sx*1,0],b))[1] ≈ [sx*1,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
+            @test @inferred(surfpt_nearby([0,0],b)) == ([1,0],[1,0])  # handle point at center properly
+            @test all([surfpt_nearby([ρ*sx*1,0],b)[1] ≈ [sx*1,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
             @test all([surfpt_nearby([0,ρ*sy*2],b)[1] ≈ [0,sy*2] for ρ = (one⁻⁻,one⁺⁺), sy = (-1,1)])
             @test all([(p = [sx*1,0]; surfpt_nearby(p,b) ≈ (p,[sx,0])) for sx = (-1,1)])  # handle point on boundary properly
             @test all([(p = [0,sy*2]; surfpt_nearby(p,b) ≈ (p,[0,sy])) for sy = (-1,1)])  # handle point on boundary properly
@@ -110,7 +111,8 @@ end
             @test hash(br) == hash(deepcopy(br))
 
             n1, n2 = normalize.((ax1, ax2))
-            @test all([@inferred(surfpt_nearby(ρ*s1*r1*n1,br))[1] ≈ s1*r1*n1 for ρ = (one⁻⁻,one⁺⁺), s1 = (-1,1)])
+            @test @inferred(surfpt_nearby([0,0],br)) ≈ (n1,n1)  # handle point at center properly
+            @test all([surfpt_nearby(ρ*s1*r1*n1,br)[1] ≈ s1*r1*n1 for ρ = (one⁻⁻,one⁺⁺), s1 = (-1,1)])
             @test all([surfpt_nearby(ρ*s2*r2*n2,br)[1] ≈ s2*r2*n2 for ρ = (one⁻⁻,one⁺⁺), s2 = (-1,1)])
             @test all([(p = s1*r1*n1; surfpt_nearby(p,br) ≈ (p,s1*n1)) for s1 = (-1,1)])  # handle point on boundary properly
             @test all([(p = s2*r2*n2; surfpt_nearby(p,br) ≈ (p,s2*n2)) for s2 = (-1,1)])  # handle point on boundary properly
@@ -136,7 +138,9 @@ end
             @test hash(bs) == hash(deepcopy(bs))
 
             n1, n2 = normalize.(([1,0], [1,1]))
-            @test all([@inferred(surfpt_nearby(s2*(r2*ax2+∆ρ*n2),bs))[1] ≈ s2*r2*ax2 for ∆ρ = (-0.1,0.1), s2 = (-1,1)])
+            cosθ = (-ax1) ⋅ (-n1)
+            @test @inferred(surfpt_nearby([0,0],bs)) ≈ (-cosθ*n1,-n1)  # handle point at center properly
+            @test all([surfpt_nearby(s2*(r2*ax2+∆ρ*n2),bs)[1] ≈ s2*r2*ax2 for ∆ρ = (-0.1,0.1), s2 = (-1,1)])
             @test all([surfpt_nearby(s1*(r1*ax1+∆ρ*n1),bs)[1] ≈ s1*r1*ax1 for ∆ρ = (-0.1,0.1), s1 = (-1,1)])
             @test all([(p = s1*r1*ax1; surfpt_nearby(p,bs) ≈ (p,s1*n1)) for s1 = (-1,1)])  # handle point on boundary properly
             @test all([(p = s2*r2*ax2; surfpt_nearby(p,bs) ≈ (p,s2*n2)) for s2 = (-1,1)])  # handle point on boundary properly
@@ -156,7 +160,8 @@ end
             @test @inferred([0.3,2*sqrt(1 - 0.3^2)-0.01] ∈ e)
             @test [0.3,2*sqrt(1 - 0.3^2)+0.01] ∉ e
 
-            @test all([@inferred(surfpt_nearby([ρ*sx*1,0],e))[1] ≈ [sx*1,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
+            @test @inferred(surfpt_nearby([0,0],e)) ≈ ([1,0], [1,0])  # handle point at center properly
+            @test all([surfpt_nearby([ρ*sx*1,0],e)[1] ≈ [sx*1,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
             @test all([surfpt_nearby([0,ρ*sy*2],e)[1] ≈ [0,sy*2] for ρ = (one⁻⁻,one⁺⁺), sy = (-1,1)])
             @test all([(p = [sx*1,0]; surfpt_nearby(p,e) ≈ (p,[sx,0])) for sx = (-1,1)])  # handle point on boundary properly
             @test all([(p = [0,sy*2]; surfpt_nearby(p,e) ≈ (p,[0,sy])) for sy = (-1,1)])  # handle point on boundary properly
@@ -177,7 +182,7 @@ end
         @testset "Ellipsoid, rotated" begin
             θ = π/3
             R = [cos(θ) sin(θ); sin(θ) -cos(θ)]
-            er = Ellipsoid([0,0], [1,2], R)
+            er = Ellipsoid([0,0], [2,3], R)
             bp = GeometryPrimitives.boundpts(er)
 
             bp1, bp2 = bp[:,1], bp[:,2]
@@ -188,10 +193,11 @@ end
             @test (@inferred(one⁻ * bp1 ∈ er)) && (one⁻ * bp2 ∈ er)
             @test (one⁺ * bp1 ∉ er) && (one⁺ * bp2 ∉ er)
 
-            @test all([@inferred(surfpt_nearby(R*[ρ*sx*1,0],er))[1] ≈ R*[sx*1,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
-            @test all([surfpt_nearby(R*[0,ρ*sy*2],er)[1] ≈ R*[0,sy*2] for ρ = (one⁻⁻,one⁺⁺), sy = (-1,1)])
-            @test all([(p = R*[sx*1,0]; surfpt_nearby(p,er) ≈ (p,R*[sx,0])) for sx = (-1,1)])  # handle point on boundary properly
-            @test all([(p = R*[0,sy*2]; surfpt_nearby(p,er) ≈ (p,R*[0,sy])) for sy = (-1,1)])  # handle point on boundary properly
+            @test @inferred(surfpt_nearby([0,0],er)) ≈ (2*R[:,1], R[:,1])  # handle point at center properly
+            @test all([surfpt_nearby(R*[ρ*sx*2,0],er)[1] ≈ R*[sx*2,0] for ρ = (one⁻⁻,one⁺⁺), sx = (-1,1)])
+            @test all([surfpt_nearby(R*[0,ρ*sy*3],er)[1] ≈ R*[0,sy*3] for ρ = (one⁻⁻,one⁺⁺), sy = (-1,1)])
+            @test all([(p = R*[sx*2,0]; surfpt_nearby(p,er) ≈ (p,R*[sx,0])) for sx = (-1,1)])  # handle point on boundary properly
+            @test all([(p = R*[0,sy*3]; surfpt_nearby(p,er) ≈ (p,R*[0,sy])) for sy = (-1,1)])  # handle point on boundary properly
 
             # Test the normal vector at the two bounding points are the x- and y-directions.
             @test @inferred(normal(bp1, er)) ≈ [1,0]
@@ -201,7 +207,7 @@ end
             @test @inferred(bounds(er)) == ([-xmax, -ymax], [xmax, ymax])
             @test checkbounds(er)
 
-            br = Box([0,0], [2,4], [cos(θ) sin(θ); sin(θ) -cos(θ)])
+            br = Box([0,0], 2*[2,3], R)
             ebr = Ellipsoid(br)
             @test er == ebr
             @test hash(er) == hash(ebr)

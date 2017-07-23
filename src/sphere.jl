@@ -16,7 +16,7 @@ Base.hash(s::Sphere, h::UInt) = hash(s.c, hash(s.r, hash(s.data, hash(:Sphere, h
 Base.in(x::SVector{N}, s::Sphere{N}) where {N} = sum(abs2,x - s.c) ≤ s.r^2
 
 function surfpt_nearby(x::SVector{N}, s::Sphere{N}) where {N}
-    nout = x==s.c ? SVector(ntuple(k -> k==N ? 1.0 : 0.0, Val{N})) :  # nout = e_N for x == s.c
+    nout = x==s.c ? SVector(ntuple(k -> k==1 ? 1.0 : 0.0, Val{N})) :  # nout = e₁ for x == s.c
                     normalize(x-s.c)
     return s.c+s.r*nout, nout
 end
