@@ -20,9 +20,9 @@ Base.hash(s::Cylinder, h::UInt) = hash(s.c, hash(s.r, hash(s.a, hash(s.h2, hash(
 
 function Base.in(x::SVector{N}, s::Cylinder{N}) where {N}
     d = x - s.c
-    p = dot(d, s.a)
+    p = d ⋅ s.a
     abs(p) > s.h2 && return false
-    return sum(abs2,d - p*s.a) ≤ s.r^2
+    return sum(abs2, d - p*s.a) ≤ s.r^2
 end
 
 function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}

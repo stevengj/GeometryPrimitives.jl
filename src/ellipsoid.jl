@@ -23,7 +23,7 @@ Ellipsoid(b::Box{N,<:Any,L}, data::D=nothing) where {N,D,L} = Ellipsoid{N,D,L}(b
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
 Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, hash(:Ellipsoid, h)))))
 
-Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
+Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = dot((b.p * (x - b.c)).^2, b.ri2) ≤ 1.0
 
 function surfpt_nearby(x::SVector{N}, b::Ellipsoid{N}) where {N}
     if x == b.c

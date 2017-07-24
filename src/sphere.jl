@@ -13,7 +13,7 @@ Sphere(c::AbstractVector, r::Real, data=nothing) = (N = length(c); Sphere(SVecto
 Base.:(==)(s1::Sphere, s2::Sphere) = s1.c==s2.c && s1.r==s2.r && s1.data==s2.data
 Base.hash(s::Sphere, h::UInt) = hash(s.c, hash(s.r, hash(s.data, hash(:Sphere, h))))
 
-Base.in(x::SVector{N}, s::Sphere{N}) where {N} = sum(abs2,x - s.c) ≤ s.r^2
+Base.in(x::SVector{N}, s::Sphere{N}) where {N} = sum(abs2, x - s.c) ≤ s.r^2
 
 function surfpt_nearby(x::SVector{N}, s::Sphere{N}) where {N}
     nout = x==s.c ? SVector(ntuple(k -> k==1 ? 1.0 : 0.0, Val{N})) :  # nout = e₁ for x == s.c
