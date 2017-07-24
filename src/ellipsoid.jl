@@ -25,7 +25,37 @@ Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, 
 
 Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 
-normal(x::SVector{N}, b::Ellipsoid{N}) where {N} = normalize(Ac_mul_B(b.p, b.ri2 .* (b.p * (x - b.c))))
+function surfpt_nearby(x::SVector{N}, b::Ellipsoid{N}) where {N}
+    if x == b.c
+        _m, i = findmax(b.ri2)
+        nout = b.p[i,:]  # assume b.p is orthogonal
+        return b.c + nout/√b.ri2[i], nout
+    end
+
+    # For a given point x and equation of ellipsoid f(x) = 1, find t such that x₀ = x + t*∇f(x)
+    # is on the ellipsoid.  Eventually this reduces to a quadratic equation for t.  The
+    # following is evaluation of the quadratic formula in a numerically stable way.
+    px = b.p * (x - b.c)  # in ellipsoid's coordinates
+    px2 = px.^2
+
+    px²r⁻² = px2 ⋅ b.ri2
+    px²r⁻⁴ = px2 ⋅ (b.ri2.^2)
+    px²r⁻⁶ = px2 ⋅ (b.ri2.^3)
+
+    q24 = (px²r⁻² - 1) / px²r⁻⁴
+    q64 = px²r⁻⁶ / px²r⁻⁴
+
+    t = -q24 / (1 + √(1 - q24 * q64))
+
+    # From t, recover x₀ = x + t*∇f(x).
+    px₀ = (t*b.ri2 + 1) .* px  # surface point in ellipsoid coordinates
+
+    # Transform back to the original coordinates.
+    x₀ = At_mul_B(b.p, px₀) + b.c
+    nout = normalize(At_mul_B(b.p, px .* b.ri2))
+
+    return x₀, nout
+end
 
 function boundpts(b::Ellipsoid{N}) where {N}
     # Return the points tangential to the bounding box.

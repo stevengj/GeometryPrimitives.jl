@@ -29,10 +29,15 @@ function Base.in(x::SVector{N}, b::Box{N}) where {N}
     return true
 end
 
-function normal(x::SVector{N}, b::Box{N}) where {N}
+function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
     _m, i = findmin(abs.(abs.(d) - b.r))
-    return normalize(b.p[i,:] * sign(d[i]))  # b.p[i,:] is non-unit for non-rectangular box
+    nout = normalize(b.p[i,:])  # direction normal; b.p[i,:] is non-unit for non-rectangular box
+    cosθ = nout ⋅ inv(b.p)[:,i]  # θ: angle between nout and ith axis
+    l∆x = (b.r[i] - abs(d[i])) * cosθ  # distance between surface point and x
+    d[i] < 0 && (nout = -nout)
+
+    return x + l∆x*nout, nout
 end
 
 signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
