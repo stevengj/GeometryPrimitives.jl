@@ -26,7 +26,11 @@ Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(b.data, 
 Base.in(x::SVector{N}, b::Ellipsoid{N}) where {N} = sum((b.p * (x - b.c)).^2 .* b.ri2) ≤ 1.0
 
 function surfpt_nearby(x::SVector{N}, b::Ellipsoid{N}) where {N}
-    x == b.c && ((_m,i) = findmax(b.ri2); nout = b.p[i,:]; return (b.c + nout/√b.ri2[i], nout))  # assume b.p is orthogonal
+    if x == b.c
+        _m, i = findmax(b.ri2)
+        nout = b.p[i,:]  # assume b.p is orthogonal
+        return b.c + nout/√b.ri2[i], nout
+    end
 
     # For a given point x and equation of ellipsoid f(x) = 1, find t such that x₀ = x + t*∇f(x)
     # is on the ellipsoid.  Eventually this reduces to a quadratic equation for t.  The
