@@ -1,19 +1,19 @@
 export Box
 
-mutable struct Box{N,D,L} <: Shape{N,D}
+mutable struct Box{N,L,D} <: Shape{N,L,D}
     c::SVector{N,Float64} # box center
     r::SVector{N,Float64}   # "radius" (semi-axis) in each direction
     p::SMatrix{N,N,Float64,L} # projection matrix to box coordinates
     data::D             # auxiliary data
-    Box{N,D,L}(c,r,p,data) where {N,D,L} = new(c,r,p,data)  # suppress default outer constructor
+    Box{N,L,D}(c,r,p,data) where {N,L,D} = new(c,r,p,data)  # suppress default outer constructor
 end
 
 Box(c::SVector{N}, d::SVector{N},
     axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
-    data::D=nothing) where {N,D,L} =
-    Box{N,D,L}(c, 0.5d, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
+    data::D=nothing) where {N,L,D} =
+    Box{N,L,D}(c, 0.5d, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
 # Use this after StaticArrays issue 242 is fixed:
-#    Box{N,D,L}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+#    Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
 
 Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))

@@ -1,16 +1,16 @@
 export Cylinder
 
-mutable struct Cylinder{N,D} <: Shape{N,D}
+mutable struct Cylinder{N,L,D} <: Shape{N,L,D}
     c::SVector{N,Float64} # Cylinder center
     r::Float64          # radius
     a::SVector{N,Float64}   # axis unit vector
     h2::Float64         # height * 0.5
     data::D             # auxiliary data
-    Cylinder{N,D}(c,r,a,h2,data) where {N,D} = new(c,r,a,h2,data)  # suppress default outer constructor
+    Cylinder{N,L,D}(c,r,a,h2,data) where {N,L,D} = new(c,r,a,h2,data)  # suppress default outer constructor
 end
 
 Cylinder(c::SVector{N}, r::Real, a::SVector{N}, h::Real=Inf, data::D=nothing) where {N,D} =
-    Cylinder{N,D}(c, r, normalize(a), 0.5h, data)
+    Cylinder{N,N*N,D}(c, r, normalize(a), 0.5h, data)
 
 Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data=nothing) =
     (N = length(c); Cylinder(SVector{N}(c), r, SVector{N}(a), h, data))
