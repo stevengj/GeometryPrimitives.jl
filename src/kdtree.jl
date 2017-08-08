@@ -17,8 +17,8 @@ mutable struct KDTree{K,S<:Shape{K}}
     s::Vector{S}
     ix::Int
     x::Float64
-    left::KDTree  # shapes ≤ x in coordinate ix
-    right::KDTree # shapes > x in coordinate ix
+    left::KDTree{K,S}  # shapes ≤ x in coordinate ix
+    right::KDTree{K,S} # shapes > x in coordinate ix
     KDTree{K,S}(s::AbstractVector{S}) where {K,S<:Shape{K}} = new(s, 0)
     function KDTree{K,S}(ix::Integer, x::Real, left::KDTree{K,S}, right::KDTree{K,S}) where {K,S<:Shape{K}}
         1 ≤ ix ≤ K || throw(BoundsError())
