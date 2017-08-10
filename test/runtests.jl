@@ -262,12 +262,18 @@ end
     end
 
     @testset "KDTree" begin
+        s = [Sphere([i,0], 1) for i in 0:10]
+        s0 = Sphere([0,0], 1)
+        s = [s0, s0, s0, s0, s...]
+        @test_nowarn KDTree(s)  # must not generate StackOverflowError
+
         s = Shape{2,4}[Sphere([i,0], 1, i) for i in 0:20]
         kd = KDTree(s)
-        @test GeometryPrimitives.depth(kd) == 4
+        @test GeometryPrimitives.depth(kd) == 3
         @test get(findin([10.1,0], kd)).data == 10
         @test isnull(findin([10.1,1], kd))
         @test checktree(kd, s)
+
         s = Shape{3,9}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
         @test checktree(KDTree(s), s)
         s = Shape{3,9}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
