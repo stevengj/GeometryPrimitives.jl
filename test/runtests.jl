@@ -262,7 +262,7 @@ end
     end
 
     @testset "KDTree" begin
-        s = [Sphere([i,0], 1) for i in 0:10]
+        s = [Sphere([i,0], 1) for i in 2:4]
         s0 = Sphere([0,0], 1)
         s = [s0, s0, s0, s0, s...]
         @test_nowarn KDTree(s)  # must not generate StackOverflowError
