@@ -60,7 +60,7 @@ function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
     end
 
     # don't bother subdividing if it doesn't reduce the # of shapes much
-    4*min(nl,nr) > 3*length(s) && return KDTree{K,S}(s)
+    4*max(nl,nr) > 3*length(s) && return KDTree{K,S}(s)
 
     # create the arrays of shapes in each subtree
     sl = Array{S}(nl)
