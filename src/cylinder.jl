@@ -27,19 +27,26 @@ end
 
 function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     d = x - s.c
-    p = d ⋅ s.a
-    q = d - p*s.a
-    lp = abs(p)
-    lq = norm(q)
-    if abs(lp-s.h2) < abs(lq-s.r) || lq == 0
-        nout = p < 0 ? -s.a : s.a
-        l∆x = s.h2 - lp
-    else
-        l∆x = s.r - lq
-        nout = q / lq
+    p = d ⋅ s.a  # scalar
+    q = d - p*s.a  # vector
+    lp, lq = abs(p), norm(q)
+    pout = copysign(1.0,p) * s.a
+    qout = lq≠0 ? q/lq : @SVector(zeros(N))  # qout is used only when lq ≠ 0 below
+
+    onbndp = abs(lp-s.h2) ≤ Base.rtoldefault(Float64) * s.h2
+    onbndq = abs(lq-s.r) ≤ Base.rtoldefault(Float64) * s.r
+    isoutp = (s.h2<lp) || onbndp
+    isoutq = (s.r<lq) || onbndq
+    ∆p, ∆q = s.h2-lp, s.r-lq
+    if !isoutp && !isoutq  # x strictly inside cylinder
+        (nout, ∆x) = (∆p≤∆q || lq==0) ? (pout, ∆p*pout) : (qout, ∆q*qout)  # qout is used when lq ≠ 0
+    else  # x outside cylinder or on boundary
+        ∆x = isoutp*∆p*pout + (isoutq && lq≠0)*∆q*qout  # qout is used when lq ≠ 0
+        nout = (!isoutp || onbndp) && (!isoutq || onbndq) ? onbndp*pout + (onbndq && lq≠0)*qout : -∆x  # "if onbound in projected directions"
+        nout = normalize(nout)
     end
 
-    return x + l∆x*nout, nout
+    return x+∆x, nout
 end
 
 const rotate2 = @SMatrix [0.0 1.0; -1.0 0.0] # 2x2 90° rotation matrix
