@@ -262,10 +262,10 @@ end
     end
 
     @testset "KDTree" begin
-        s = [Sphere([i,0], 1) for i in 2:4]
+        s = [Sphere([i,0], 1) for i in 0:10]
         s0 = Sphere([0,0], 1)
         s = [s0, s0, s0, s0, s...]
-        @test_nowarn KDTree(s)  # must not generate StackOverflowError
+        @test_nowarn KDTree(s)  # make sure segmentation fault caused by StackOverflowError does not occur due to infinite recursion
 
         s = Shape{2,4}[Sphere([i,0], 1, i) for i in 0:20]
         kd = KDTree(s)
