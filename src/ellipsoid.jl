@@ -67,12 +67,7 @@ function boundpts(b::Ellipsoid{N}) where {N}
     # n is (n .* r2) / sqrt(r2' * n.^2).  Below is the broadcasted version of this over a
     # matrix n, whose each column is a direction normal.  Once calculated, we need to
     # change the coordinates back to the original coordinates.
-    #
-    # This operation can be written M = b.p' * ((ndir .* r2) ./ sqrt.(r2' * ndir.^2)), but
-    # the resulting M is not an SMatrix.  (The calculation involves broadcasted division by
-    # a row vector, which leads to a non-SMatrix.)  Therefore, we first calculate M'
-    # (which remains SMatrix) and recover M.
-    M = (((ndir .* r2)' ./ sqrt.(ndir'.^2 * r2)) * b.p)'
+    M = b.p' * ((ndir .* r2) ./ sqrt.(r2' * ndir.^2))
 
     return M
 end
