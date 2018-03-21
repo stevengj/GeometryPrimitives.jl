@@ -33,8 +33,8 @@ function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     pout = copysign(1.0,p) * s.a
     qout = lq≠0 ? q/lq : @SVector(zeros(N))  # qout is used only when lq ≠ 0 below
 
-    onbndp = abs(lp.-s.h2) .≤ Base.rtoldefault(Float64) .* s.h2
-    onbndq = abs(lq.-s.r) .≤ Base.rtoldefault(Float64) .* s.r
+    onbndp = abs(lp.-s.h2) .≤ Base.rtoldefault(Float64) * s.h2
+    onbndq = abs(lq.-s.r) .≤ Base.rtoldefault(Float64) * s.r
     isoutp = (s.h2<lp) || onbndp
     isoutq = (s.r<lq) || onbndq
     ∆p, ∆q = s.h2-lp, s.r-lq
