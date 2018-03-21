@@ -103,8 +103,8 @@ end
 
             Cin = R * (GeometryPrimitives.signmatrix(br) .* (one⁻ .* [r1,r2]))  # around corners, inside
             Cout = R * (GeometryPrimitives.signmatrix(br) .* (one⁺ .* [r1,r2]))  # around corners, outside
-            for j = 1:4; @test Cin[:,j] ∈ br; end
-            for j = 1:4; @test Cout[:,j] ∉ br; end
+            for j = 1:2; @test Cin[:,j] ∈ br; end
+            for j = 1:2; @test Cout[:,j] ∉ br; end
 
             @test br == deepcopy(br)
             @test hash(br) == hash(deepcopy(br))

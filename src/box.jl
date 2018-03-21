@@ -11,9 +11,7 @@ end
 Box(c::SVector{N}, d::SVector{N},
     axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
     data::D=nothing) where {N,L,D} =
-    Box{N,L,D}(c, 0.5d, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
-# Use this after StaticArrays issue 242 is fixed:
-#    Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+    Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
 
 Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
@@ -58,19 +56,12 @@ function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     return x+∆x, nout
 end
 
-signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
-signmatrix(b::Shape{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
-signmatrix(b::Shape{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
+signmatrix(b::Box{1}) = SMatrix{1,1}(1)
+signmatrix(b::Box{2}) = SMatrix{2,2}(1,1, -1,1)
+signmatrix(b::Box{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
 
 function bounds(b::Box)
-    # Below, inv(b.p) .* b.r' would have been conceptually better because its columns
-    # are scaled axes vectors.  However, then the result is not SMatrix because b.r'
-    # is not SVector.  Then, we cannot use maximum(..., Val{2}), which is type-stable
-    # for SMatrix.  A workaround is to calculate inv(b.p') .* b.r and take transpose.
-    A = (inv(b.p') .* b.r)'  # SMatrix
-    # Use this after StaticArrays issue 242 is fixed:
-    #    A = inv(b.p) .* b.r'
-
-    m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box
+    A = inv(b.p) .* b.r'
+    m = maximum(abs.(A * signmatrix(b)), Val{2})[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
 end
