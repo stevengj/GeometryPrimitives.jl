@@ -58,9 +58,9 @@ function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     return x+∆x, nout
 end
 
-signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
-signmatrix(b::Shape{2}) = SMatrix{2,4}(1,1, -1,1, 1,-1, -1,-1)
-signmatrix(b::Shape{3}) = SMatrix{3,8}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1, -1,-1,1, -1,1,-1, 1,-1,-1, -1,-1,-1)
+signmatrix(b::Box{1}) = SMatrix{1,1}(1)
+signmatrix(b::Box{2}) = SMatrix{2,2}(1,1, -1,1)
+signmatrix(b::Box{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
 
 function bounds(b::Box)
     # Below, inv(b.p) .* b.r' would have been conceptually better because its columns
@@ -71,6 +71,6 @@ function bounds(b::Box)
     # Use this after StaticArrays issue 242 is fixed:
     #    A = inv(b.p) .* b.r'
 
-    m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box
+    m = maximum(abs.(A * signmatrix(b)), Val{2})[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
 end
