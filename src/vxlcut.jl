@@ -9,33 +9,34 @@ const NP = (N, P)
 corner(vxl::NTuple{2,SVector{3,<:Real}}, sx::Integer, sy::Integer, sz::Integer) =
     SVector(vxl[sx][X], vxl[sy][Y], vxl[sz][Z])
 
+# Calculate the bit array that indicates corner contained-ness.
+#
+# The bit array is 8 bits (= 1 byte).  The kth bit is 1 if the kth corner is contained in
+# the half space defined by the plane, an 0 otherwise.  The 8 corners of the voxel are
+# indexed 1 through 8 in the order of (---), (+--), (-+-), (++-), (--+), (+-+), (-++), (+++),
+# where, e.g., (+--) indicates the corner at the +x, -y, -z corner.
 function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of voxel
                      nout::SVector{3}, # unit outward normal of plane
                      nr₀)  # equation of plane: nout⋅(r - r₀) = 0, or nout⋅r = nr₀
-    # Calculate the bit array that indicates corner contained-ness.
-
-    # The bit array is 8 bits (= 1 byte).  The kth bit is 1 if the kth corner is
-    # contained in the half space defined by the plane, an 0 otherwise.  The 8 corners
-    # of the voxel are indexed 1 through 8 in the order of (---), (+--), (-+-), (++-),
-    # (--+), (+-+), (-++), (+++), where, e.g., (+--) indicates the corner at the
-    # +x, -y, -z corner.
     cbits = 0x00
     bit = 0x01
+    n_on = 0
     for sz = NP, sy = NP, sx = NP
         r = corner(vxl, sx, sy, sz)
-        if nout⋅r ≤ nr₀  # corner is inside (nout is outward normal)
+        nr = nout⋅r
+        if nr ≤ nr₀  # corner is contained and not on boundary (nout is outward normal)
             cbits |= bit
+            n_on += nr==nr₀  # corner is on boundary
         end
         bit <<= 1
     end
 
-    return cbits
+    return cbits, n_on
 end
 
+# Determine if the corner contained-ness bit array corresponds to the case where the plane
+# crosses one of the three sets of four parallel edges of the voxel.
 function isquadsect(cbits::UInt8)
-    # Determine if the corner contained-ness bit array corresponds to the case where
-    # the plane crosses one of the three sets of four parallel edges of the voxel.
-
     return cbits==0x0F || cbits==~0x0F || cbits==0x33 || cbits==~0x33 || cbits==0x55 || cbits==~0x55
 
     # Equivalent to
@@ -44,10 +45,9 @@ function isquadsect(cbits::UInt8)
     # return n==4 && iseven(m)
 end
 
+# For the cases where the plane crosses a set of four parallel edges of the voxel, determine
+# which direction those edges lie.
 function edgedir_quadsect(cbits::UInt8)
-    # For the cases where the plane crosses a set of four parallel edges of the voxel,
-    # determine which direction those edges lie.
-
     if cbits==0x0F || cbits==~0x0F
         dir = Z
     elseif cbits==0x33 || cbits==~0x33
@@ -60,10 +60,8 @@ function edgedir_quadsect(cbits::UInt8)
     return dir
 end
 
+# Return the volume fraction when the plane croses a set of four parallel edges.
 function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
-    # Return the volume fraction for the case where the plane croses a set of four parallel
-    # edges.
-
     const w = edgedir_quadsect(cbits)
     const ∆w = vxl[P][w] - vxl[N][w]
 
@@ -79,17 +77,17 @@ function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits
     return abs(mean_cepts - vxl[sw][w]/∆w)
 end
 
+# Calculate the volume fraction for the most general cases, by cutting out corners from a
+# triangular pyramid.
+#
+# Assume count_ones(cbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
+# cbits.
 function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
-    # Calculate the volume fraction of most general cases, by cutting out corners from a
-    # triangular pyramid.
-    # Assume count_ones(cbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
-    # cbits.
-
     const s = (nout.<0) .+ 1
     const c = corner(vxl, s[X], s[Y], s[Z])  # corner coordinates
     const ∆ = vxl[P] - vxl[N]  # vxl edges
     const nc = nout .* c
-    rmax, rmid, rmin =  abs.((((nr₀-sum(nc)) .+ nc) ./ nout - c) ./ ∆) # (lengths from corner to intercetps) / (voxel edges)
+    rmax, rmid, rmin =  abs.(((nr₀-sum(nc)) .+ nc) ./ nout - c) ./ ∆ # (lengths from corner to intercetps) / (voxel edges)
 
     # const nx, ny, nz = nout
     # const sx, sy, sz = ((nx≥0 ? N : P), (ny≥0 ? N : P), (nz≥0 ? N : P))  # signs of corner
@@ -99,7 +97,6 @@ function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits:
     # rmax, rmid, rmin =  # (lengths from corner to intercetps) / (voxel edges)
     #     abs((nr₀-nycy-nzcz)/nx-cx)/∆x, abs((nr₀-nzcz-nxcx)/ny-cy)/∆y, abs((nr₀-nxcx-nycy)/nz-cz)/∆z
 
-
     # Sort rmax, rmin, rmin properly.
     if rmax < rmid; rmax, rmid = rmid, rmax; end
     if rmid < rmin; rmid, rmin = rmin, rmid; end
@@ -108,11 +105,16 @@ function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits:
     # Calculate the volume of the triangular pyramid, and cut off appropriate corners.
     const tmax = 1 - 1/rmax
     rvol_core = 1 + tmax + tmax^2
-    if rmid > 1
+
+    # Below, if rmax == Inf, rmid and rmin must be ≤ 1 in exact arithmetic and subtraction
+    # must not occur, but they can be > 1 in floating-point arithmetic and lead to large
+    # subtraction.  Prevent this by subtracting only for rmax ≠ Inf.
+    isfin_rmax = !isinf(rmax)
+    if rmid > 1 && isfin_rmax
         tmid = 1 - 1/rmid
         rvol_core -= rmax * tmid^3
     end
-    if rmin > 1
+    if rmin > 1 && isfin_rmax
         tmin = 1 - 1/rmin
         rvol_core -= rmax * tmin^3
     end
@@ -135,23 +137,22 @@ half-space is described by the boundary plane.  The boundary plane is described 
 outward normal vector `nout = [nx, ny, nz]` and a point `r₀ = [rx, ry, rz]` on the plane.
 `nout` does not have to be normalized.
 """
+# Return the volume fraction rvol = vol(voxel ⋂ half-space) / vol(voxel).
 function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
-    # Return the volume fraction rvol = vol(voxel ⋂ half-space) / vol(voxel).
-
     const nr₀ = nout⋅r₀
-    const cbits = corner_bits(vxl, nout, nr₀)
-    const n_corners = count_ones(cbits)  # number of corners contained
+    const cbits, n_on = corner_bits(vxl, nout, nr₀)
+    const n_in = count_ones(cbits)  # number of corners contained
 
-    if n_corners == 8  # voxel is inside half-space
+    if n_in == 8  # voxel is inside half-space
         rvol = 1.
-    elseif n_corners == 0  # voxel is outside half-space
+    elseif n_in - n_on == 0  # voxel is outside half-space
         rvol = 0.
     elseif isquadsect(cbits) # plane crosses a set of four parallel edges of voxel
         rvol = rvol_quadsect(vxl, nout, nr₀, cbits)
-    elseif n_corners ≤ 4 # general cases with n_corners ≤ 4
+    elseif n_in ≤ 4 # general cases with n_in ≤ 4
         rvol = rvol_gensect(vxl, nout, nr₀, cbits)
-    else  # general cases with n_corners ≥ 5
-        assert(n_corners ≥ 5)
+    else  # general cases with n_in ≥ 5
+        assert(n_in ≥ 5)
         rvol = 1. - rvol_gensect(vxl, .-nout, -nr₀, ~cbits)
     end
 

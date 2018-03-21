@@ -381,11 +381,21 @@ end
             r₀ = SVector(0,0,0)
             @test (nout = SVector(1,0,0); volfrac(vxl, nout, r₀) ≈ 0)  # completely outside
             @test (nout = SVector(-1,0,0); volfrac(vxl, nout, r₀) ≈ 1)  # completely inside
+            @test (nout = SVector(1,1,0); volfrac(vxl, nout, r₀) ≈ 0)  # completely outside
+            @test (nout = SVector(-1,-1,0); volfrac(vxl, nout, r₀) ≈ 1)  # completely inside
+            @test (nout = SVector(1,1,1); volfrac(vxl, nout, r₀) ≈ 0)  # completely outside
+            @test (nout = SVector(-1,-1,-1); volfrac(vxl, nout, r₀) ≈ 1)  # completely inside
             @test (nout = SVector(-1,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_tricyl()
             @test (nout = SVector(-1,-1,1); volfrac(vxl, nout, r₀) ≈ 5/6)  # rvol_gensect()
             @test (nout = SVector(1,-2,1); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadsect()
             r₀ = SVector(0.5,0.5,0)
             @test (nout = SVector(-2,1,0); volfrac(vxl, nout, r₀) ≈ 0.5)  # rvol_quadcyl()
+
+            # Test tolerance to floating-point arithmetic.
+            vxl = (SVector(0,9.5,0), SVector(1,10.5,1))
+            r₀ = SVector(0.5,10.0,0.5)
+            nout = SVector(0.0,1/√2,1/√2)
+            @test volfrac(vxl, nout, r₀) ≈ 0.5
 
             # Test rvol_quadsect() for nontrivial cases.
             vxl = (SVector(0,0,0), SVector(1,1,2))
