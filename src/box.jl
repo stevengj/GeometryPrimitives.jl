@@ -30,14 +30,32 @@ function Base.in(x::SVector{N}, b::Box{N}) where {N}
 end
 
 function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
-    d = b.p * (x - b.c)
-    _m, i = findmin(abs.(abs.(d) - b.r))
-    nout = normalize(b.p[i,:])  # direction normal; b.p[i,:] is non-unit for non-rectangular box
-    cosθ = nout ⋅ inv(b.p)[:,i]  # θ: angle between nout and ith axis
-    l∆x = (b.r[i] - abs(d[i])) * cosθ  # distance between surface point and x
-    d[i] < 0 && (nout = -nout)
+    ax = inv(b.p)  # axes
+    n = (b.p ./ sqrt.(sum(abs2,b.p,Val{2})[:,1]))  # rows are direction normals; do not take transpose
 
-    return x + l∆x*nout, nout
+    # Below, θ[i], the angle between ax[:,i] and n[i,:], is always acute, because the
+    # diagonal entries of ax * b.p are positive (= 1).
+    cosθ = sum(ax.*n', Val{1})[1,:]
+    # cosθ = diag(n*ax)  # faster than SVector(ntuple(i -> ax[:,i]⋅n[i,:], Val{N}))
+    # assert(all(cosθ .≥ 0))
+
+    d = b.p * (x - b.c)
+    n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
+    absd = abs.(d)
+    onbound = abs.(b.r.-absd) .≤ Base.rtoldefault(Float64) .* b.r  # basically b.r .≈ absd but faster
+    isout = (b.r.<absd) .| onbound
+    ∆ = (b.r .- absd) .* cosθ
+    if count(isout) == 0  # x strictly inside box
+        l∆x, i = findmin(∆)
+        nout = n[i,:]
+        ∆x = l∆x * nout
+    else  # x outside box or on boundary in one or multiple directions
+        ∆x = n' * (∆ .* isout)  # project only in isout directions
+        nout = all(.!isout .| onbound) ? n'*onbound : -∆x  # "if onbound in projected directions"
+        nout = normalize(nout)
+    end
+
+    return x+∆x, nout
 end
 
 signmatrix(b::Shape{1}) = SMatrix{1,2}(1,-1)
@@ -50,6 +68,8 @@ function bounds(b::Box)
     # is not SVector.  Then, we cannot use maximum(..., Val{2}), which is type-stable
     # for SMatrix.  A workaround is to calculate inv(b.p') .* b.r and take transpose.
     A = (inv(b.p') .* b.r)'  # SMatrix
+    # Use this after StaticArrays issue 242 is fixed:
+    #    A = inv(b.p) .* b.r'
 
     m = maximum(A * signmatrix(b), Val{2})[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
