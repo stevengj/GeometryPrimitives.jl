@@ -11,9 +11,7 @@ end
 Ellipsoid(c::SVector{N}, r::SVector{N},
           axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
           data::D=nothing) where {N,L,D} =
-    Ellipsoid{N,L,D}(c, float.(r).^-2, inv((axes' ./ sqrt.(sum(abs2,axes,Val{1}))[1,:])'), data)
-# Use this after StaticArrays issue 242 is fixed:
-#    Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+    Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
 
 Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=eye(length(c)), data=nothing) =
     (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes), data))
