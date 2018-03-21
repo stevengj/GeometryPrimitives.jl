@@ -42,9 +42,9 @@ function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
     absd = abs.(d)
-    onbound = abs.(b.r-absd) .≤ Base.rtoldefault(Float64) * b.r  # basically b.r .≈ absd but faster
+    onbound = abs.(b.r.-absd) .≤ Base.rtoldefault(Float64) .* b.r  # basically b.r .≈ absd but faster
     isout = (b.r.<absd) .| onbound
-    ∆ = (b.r - absd) .* cosθ
+    ∆ = (b.r .- absd) .* cosθ
     if count(isout) == 0  # x strictly inside box
         l∆x, i = findmin(∆)
         nout = n[i,:]
