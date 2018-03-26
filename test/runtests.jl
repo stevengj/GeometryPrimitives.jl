@@ -285,11 +285,37 @@ end
         end
 
         @testset "periodize" begin
+            # Square lattice
             c = Cylinder([0,0,0], 1, [0,0,1], 5)
-            bound = Box([0,0,0], [10,10,5])  # specify center and radii
+            b = Box([0,0,0], [10,10,5])  # specify center and radii
             A = [1 0 0; 0 1 0; 0 0 5]'
-            c_array = periodize(c, A, bound)
+            c_array = periodize(c, A, b)
             @test length(c_array) == (11-2)^2
+
+            # Hexagonal lattice
+            using PyPlot
+            c = Cylinder([0,0,0], 1/4, [0,0,1], 1)
+            b = Box([0,0,0], [12,4*√3,1])  # specify center and radii
+            A = [1 0 0; 0.5 √3/2 0; 0 0 1]'
+            c_array = periodize(c, A, b)
+
+            bnd = bounds(b)
+            x = linspace(bnd[1][1], bnd[2][1], 120*5)
+            y = linspace(bnd[1][2], bnd[2][2], 70*5)
+            Nx, Ny = length(x), length(y)
+            X = repeat(x, outer=(1,Ny))
+            Y = repeat(y.', outer=(Nx,1))
+            V = zeros(Bool, Nx, Ny)
+
+            kd = KDTree(c_array)
+            for j = 1:Ny, i = 1:Nx
+                p = [x[i], y[j], 0.0]
+                s = findin(p, kd)
+                V[i,j] = !isnull(s)
+            end
+
+            axes(aspect="equal")
+            pcolor(X, Y, V, cmap="gray_r")
         end
     end
 
