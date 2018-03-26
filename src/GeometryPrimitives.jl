@@ -20,6 +20,7 @@ include("box.jl")
 include("cylinder.jl")
 include("ellipsoid.jl")
 include("sphere.jl")
+include("periodize.jl")
 include("kdtree.jl")
 include("vxlcut.jl")
 
