@@ -21,4 +21,6 @@ function surfpt_nearby(x::SVector{N}, s::Sphere{N}) where {N}
     return s.c+s.r*nout, nout
 end
 
+translate(s::Sphere{N,L,D}, ∆::SVector{N}) where {N,L,D} = Sphere{N,L,D}(s.c+∆, s.r, s.data)
+
 bounds(s::Sphere) = (s.c-s.r, s.c+s.r)

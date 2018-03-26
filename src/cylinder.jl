@@ -49,6 +49,8 @@ function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     return x+∆x, nout
 end
 
+translate(s::Cylinder{N,L,D}, ∆::SVector{N}) where {N,L,D} = Cylinder{N,L,D}(s.c+∆, s.r, s.a, s.h2, s.data)
+
 const rotate2 = @SMatrix [0.0 1.0; -1.0 0.0] # 2x2 90° rotation matrix
 
 function endcircles(s::Cylinder{2})

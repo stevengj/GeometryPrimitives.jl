@@ -1,6 +1,6 @@
 module GeometryPrimitives
 using Compat, StaticArrays
-export Shape, surfpt_nearby, normal, bounds
+export Shape, surfpt_nearby, normal, bounds, translate, periodize
 
 abstract type Shape{N,L,D} end # a solid geometric shape in N dimensions (L = N*N is needed in some shapes, e.g., Box)
 
@@ -13,6 +13,8 @@ Base.ndims(o::Shape{N}) where {N} = N
 Base.in(x::AbstractVector, o::Shape{N}) where {N} = SVector{N}(x) in o
 surfpt_nearby(x::AbstractVector, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
 normal(x::AbstractVector, o::Shape) = surfpt_nearby(x, o)[2]
+translate(o::Shape{N}, ∆::AbstractVector) where {N} = translate(o, SVector{N}(∆))
+periodize(o::Shape{N}, A::AbstractMatrix, ∆range::Shape{N}) where {N} = periodize(o, SMatrix{N,N}(A), ∆range)
 
 include("box.jl")
 include("cylinder.jl")

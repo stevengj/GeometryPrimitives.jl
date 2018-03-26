@@ -70,6 +70,7 @@ end
             @test checkbounds(s)
             @test checkbounds(Sphere([1,2,3], 2))
 
+            @test (∆ = rand(2); translate(s,∆) == Sphere([3,4]+∆, 5))
         end
 
         @testset "Box" begin
@@ -92,6 +93,8 @@ end
             @test bounds(Box([0,0], [2,4], [1 1; 1 -1])) ≈ ([-3*√0.5,-3*√0.5], [3*√0.5,3*√0.5])
             @test checkbounds(b)
             @test checkbounds(Box([0,0], [2,4], [1 1; 1 -1]))
+
+            @test (∆ = rand(2); translate(b,∆) == Box([0,0]+∆, [2,4]))
         end
 
         @testset "Box, rotated" begin
@@ -125,6 +128,8 @@ end
             ymax = (R*[-r1,r2])[2]
             @test bounds(br) ≈ (-[xmax,ymax], [xmax,ymax])
             @test checkbounds(br)
+
+            @test (∆ = rand(2); translate(br,∆) == Box([0,0]+∆, [2r1, 2r2], [ax1 ax2]))
         end
 
         @testset "Box, skewed" begin
@@ -151,6 +156,8 @@ end
             ymax = (r2*ax2-r1*ax1)[2]
             @test bounds(bs) ≈ (-[xmax,ymax],[xmax,ymax])
             @test checkbounds(bs)
+
+            @test (∆ = rand(2); translate(bs,∆) == Box([0,0]+∆, [2r1, 2r2], [ax1 ax2]))
         end
 
         @testset "Ellipsoid" begin
@@ -172,6 +179,8 @@ end
             @test bounds(e) == ([-1,-2],[1,2])
             @test checkbounds(e)
             @test checkbounds(Ellipsoid([0,0], [1,2], [1 1; 1 -1]))
+
+            @test (∆ = rand(2); translate(e,∆) == Ellipsoid([0,0]+∆, [1,2]))
 
             b = Box([0,0], [2,4])
             eb = Ellipsoid(b)
@@ -207,6 +216,8 @@ end
             @test bounds(er) == ([-xmax, -ymax], [xmax, ymax])
             @test checkbounds(er)
 
+            @test (∆ = rand(2); translate(er,∆) == Ellipsoid([0,0]+∆, [2,3], R))
+
             br = Box([0,0], 2*[2,3], R)
             ebr = Ellipsoid(br)
             @test er == ebr
@@ -239,6 +250,8 @@ end
             @test bounds(c) ≈ ([-0.3,-0.3,-1.1],[0.3,0.3,1.1])
             @test checkbounds(c)
             @test checkbounds(Cylinder([1,17,44], 0.3, [1,-2,3], 1.1))
+
+            @test (∆ = rand(3); translate(c,∆) == Cylinder([0,0,0]+∆, 0.3, [0,0,1], 2.2))
         end
 
         @testset "Cylinder, rotated" begin
@@ -267,6 +280,16 @@ end
 
             @test bounds(cr) ≈ (-[(1.1+0.3)/√2,0.3,(1.1+0.3)/√2], [(1.1+0.3)/√2,0.3,(1.1+0.3)/√2])
             @test checkbounds(cr)
+
+            @test (∆ = rand(3); translate(cr,∆) == Cylinder([0,0,0]+∆, 0.3, ax3, 2.2))
+        end
+
+        @testset "periodize" begin
+            c = Cylinder([0,0,0], 1, [0,0,1], 5)
+            bound = Box([0,0,0], [10,10,5])  # specify center and radii
+            A = [1 0 0; 0 1 0; 0 0 5]'
+            c_array = periodize(c, A, bound)
+            @test length(c_array) == (11-2)^2
         end
     end
 
