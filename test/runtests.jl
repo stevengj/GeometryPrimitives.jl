@@ -287,7 +287,7 @@ end
         @testset "periodize" begin
             # Square lattice
             c = Cylinder([0,0,0], 1, [0,0,1], 5)
-            b = Box([0,0,0], [10,10,5])  # specify center and radii
+            b = Box([0,0,0], [10,10,5])
             A = [1 0 0; 0 1 0; 0 0 5]'
             c_array = periodize(c, A, b)
             @test length(c_array) == (11-2)^2
@@ -295,7 +295,7 @@ end
             # Hexagonal lattice
             using PyPlot
             c = Cylinder([0,0,0], 1/4, [0,0,1], 1)
-            b = Box([0,0,0], [12,4*√3,1])  # specify center and radii
+            b = Box([0,0,0], [12,4*√3,1])
             A = [1 0 0; 0.5 √3/2 0; 0 0 1]'
             c_array = periodize(c, A, b)
 

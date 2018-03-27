@@ -1,3 +1,7 @@
+export periodize
+
+periodize(o::Shape{N}, A::AbstractMatrix, ∆range::Shape{N}) where {N} = periodize(o, SMatrix{N,N}(A), ∆range)
+
 function periodize(o::S,  # shape to periodize
                    A::SMatrix{N,N,<:Real,L},  # columns are primitive vectors of lattice
                    ∆range::Shape{N,L}  # range of shift
@@ -19,7 +23,7 @@ function periodize(o::S,  # shape to periodize
     nmin = ceil.(Int, r * nmin_fl)  # SVector
 
     nshape = prod((nmax.-nmin).+1)  # tentative number of shapes
-    shape_array = Vector{S}(nshape)  # preallocation (will be trimmed later)
+    shp_array = Vector{S}(nshape)  # preallocation (will be trimmed later)
 
     ishape = 0
     nrange = map((n1,n2)->n1:n2, nmin.data, nmax.data)  # e.g., (1:10, 1:10, 1:10) for N = 3
@@ -28,9 +32,9 @@ function periodize(o::S,  # shape to periodize
 		if ∆ ∈ ∆range
 			shape = translate(o, ∆)
 			ishape += 1
-			shape_array[ishape] = shape
+			shp_array[ishape] = shape
 		end
     end
 
-    resize!(shape_array, ishape)  # return resized shape_array
+    resize!(shp_array, ishape)  # return resized shp_array
 end
