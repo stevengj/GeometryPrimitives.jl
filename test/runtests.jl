@@ -286,7 +286,6 @@ end
 
         @testset "periodize" begin
             # Square lattice
-            using GeometryPrimitives
             c = Cylinder([0,0,0], 1, [0,0,1], 5)
             ∆range = Box([0,0,0], [10,10,5])
             A = [1 0 0; 0 1 0; 0 0 5]'
