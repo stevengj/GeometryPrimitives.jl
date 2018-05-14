@@ -1,12 +1,11 @@
 export periodize
 
-periodize(o::Shape{N}, A::AbstractMatrix, ∆range::Shape{N}) where {N} = periodize(o, SMatrix{N,N}(A), ∆range)
+periodize(shp::Shape{N}, A::AbstractMatrix, ∆range::Shape{N}) where {N} = periodize(shp, SMatrix{N,N}(A), ∆range)
 
-
-function periodize(o::S,  # shape to periodize
-                   A::SMatrix{N,N,<:Real,L},  # columns: primitive vectors of Bravais lattice
-                   ∆range::Shape{N,L}  # range of translation vectors; boundaries included
-                  ) where {N,L,S<:Shape{N,L}}
+function periodize(shp::S,  # shape to periodize
+                   A::SMatrix{N,N,<:Real},  # columns: primitive vectors of Bravais lattice
+                   ∆range::Shape{N}  # range of translation vectors; boundaries included
+                  ) where {N,S<:Shape{N}}
     # R = n₁a₁ + n₂a₂ + n₃a₃ is a translation vector for A = [a₁ a₂ a₃].  Find the ranges of
     # n₁, n₂, n₃ to test the inclusion of R in the Shape ∆range.
     #
@@ -45,7 +44,7 @@ function periodize(o::S,  # shape to periodize
     for n = CartesianRange(nrange)  # n: CartesianIndex
 		∆ = A * SVector(n.I)  # lattice vector R
 		if ∆ ∈ ∆range
-			shape = translate(o, ∆)
+			shape = translate(shp, ∆)
 			ishape += 1
 			shp_array[ishape] = shape
 		end
