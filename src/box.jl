@@ -56,6 +56,8 @@ function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     return x+∆x, nout
 end
 
+translate(b::Box{N,L,D}, ∆::SVector{N}) where {N,L,D} = Box{N,L,D}(b.c+∆, b.r, b.p, b.data)
+
 signmatrix(b::Box{1}) = SMatrix{1,1}(1)
 signmatrix(b::Box{2}) = SMatrix{2,2}(1,1, -1,1)
 signmatrix(b::Box{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
