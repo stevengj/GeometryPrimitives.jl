@@ -1,5 +1,5 @@
 module GeometryPrimitives
-using Compat, StaticArrays
+using Compat, StaticArrays, LinearAlgebra
 export Shape, surfpt_nearby, normal, bounds, translate
 
 abstract type Shape{N,L,D} end # a solid geometric shape in N dimensions (L = N*N is needed in some shapes, e.g., Box)

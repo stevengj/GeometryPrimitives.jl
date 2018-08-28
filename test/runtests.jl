@@ -1,4 +1,6 @@
-using GeometryPrimitives, StaticArrays, Base.Test
+using GeometryPrimitives, StaticArrays, LinearAlgebra, Test
+using Random: MersenneTwister
+using Statistics: mean
 
 const rtol = Base.rtoldefault(Float64)
 const one⁻ = 1 - rtol  # slightly less than 1
@@ -38,10 +40,9 @@ function checktree(t::KDTree{N}, slist::Vector{<:Shape{N}}, ntrials=10^3) where 
     end
     for i = 1:ntrials
         x = randnb(lb,ub)
-        st = findin(x, t)
-        sl = findin(x, slist)
-        isnull(st) == isnull(sl) || return false
-        isnull(st) || get(st) == get(sl) || return false
+        st = findfirst(x, t)
+        sl = findfirst(x, slist)
+        st == sl || return false
     end
     return true
 end
@@ -296,8 +297,8 @@ end
             result = true
             for py = -5.0:5.0, px = -5.0:5.0
                 p = [px, py, 0.0]
-                s = findin(p, kd)
-                result &= !isnull(s)  # test if any lattice point within ∆range is included in a cylinder
+                s = findfirst(p, kd)
+                result &= s≠nothing  # test if all lattice points within ∆range are included in some cylinder
             end
             @test result
 
@@ -319,8 +320,8 @@ end
             # kd = KDTree(c_array)
             # for j = 1:Ny, i = 1:Nx
             #     p = [x[i], y[j], 0.0]
-            #     s = findin(p, kd)
-            #     V[i,j] = !isnull(s)
+            #     s = findfirst(p, kd)
+            #     V[i,j] = s≠nothing
             # end
             #
             # using PyPlot
@@ -346,8 +347,8 @@ end
         s = Shape{2,4}[Sphere([i,0], 1, i) for i in 0:20]
         kd = KDTree(s)
         @test GeometryPrimitives.depth(kd) == 3
-        @test get(findin([10.1,0], kd)).data == 10
-        @test isnull(findin([10.1,1], kd))
+        @test findfirst([10.1,0], kd).data == 10
+        @test findfirst([10.1,1], kd) == nothing
         @test checktree(kd, s)
 
         s = Shape{3,9}[Sphere(SVector(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
