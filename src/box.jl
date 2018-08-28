@@ -13,7 +13,7 @@ Box(c::SVector{N}, d::SVector{N},
     data::D=nothing) where {N,L,D} =
     Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
-Box(c::AbstractVector, d::AbstractVector, axes=Matrix(1.0I,length(c),length(c)), data=nothing) =
+Box(c::AbstractVector, d::AbstractVector, axes=Matrix{Float64}(I,length(c),length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
 
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data

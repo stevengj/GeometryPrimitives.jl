@@ -314,7 +314,7 @@ end
             # y = linspace(bnd[1][2], bnd[2][2], 70*5)
             # Nx, Ny = length(x), length(y)
             # X = repeat(x, outer=(1,Ny))
-            # Y = repeat(y.', outer=(Nx,1))
+            # Y = repeat(transpose(y), outer=(Nx,1))
             # V = zeros(Bool, Nx, Ny)
             #
             # kd = KDTree(c_array)

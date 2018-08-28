@@ -13,7 +13,7 @@ Ellipsoid(c::SVector{N}, r::SVector{N},
           data::D=nothing) where {N,L,D} =
     Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
-Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=Matrix(1.0I,length(c),length(c)), data=nothing) =
+Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=Matrix{Float64}(I,length(c),length(c)), data=nothing) =
     (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes), data))
 
 Ellipsoid(b::Box{N,L,D}, data::D=nothing) where {N,L,D} = Ellipsoid{N,L,D}(b.c, (b.r).^-2, b.p, data)
