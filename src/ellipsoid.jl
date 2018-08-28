@@ -9,7 +9,7 @@ mutable struct Ellipsoid{N,L,D} <: Shape{N,L,D}
 end
 
 Ellipsoid(c::SVector{N}, r::SVector{N},
-          axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N}(1.0I),  # columns are axes unit vectors
+          axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N,Float64}(I),  # columns are axes unit vectors
           data::D=nothing) where {N,L,D} =
     Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 

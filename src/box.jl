@@ -9,7 +9,7 @@ mutable struct Box{N,L,D} <: Shape{N,L,D}
 end
 
 Box(c::SVector{N}, d::SVector{N},
-    axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N}(1.0I),  # columns are axes unit vectors
+    axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N,Float64}(I),  # columns are axes unit vectors
     data::D=nothing) where {N,L,D} =
     Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
