@@ -1,5 +1,6 @@
 # kd tree for fast searching of a list of shapes
 export KDTree
+using Statistics: median
 
 """
 A K-D tree of shapes in `K` dimensions.
@@ -38,7 +39,7 @@ When searching the tree, shapes that appear earlier in `s`
 take precedence over shapes that appear later.
 """
 function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
-    (length(s) <= 4 || K == 0) && return KDTree{K,S}(s)
+    (length(s) ≤ 4 || K == 0) && return KDTree{K,S}(s)
 
     # figure out the best dimension ix to divide over,
     # the dividing plane x, and the number (nl,nr) of
@@ -63,8 +64,8 @@ function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
     4*max(nl,nr) > 3*length(s) && return KDTree{K,S}(s)
 
     # create the arrays of shapes in each subtree
-    sl = Array{S}(nl)
-    sr = Array{S}(nr)
+    sl = Vector{S}(undef, nl)
+    sr = Vector{S}(undef, nr)
     il = ir = 0
     for k in eachindex(s)
         if b[k][1][ix] ≤ x
@@ -99,32 +100,31 @@ function Base.show(io::IO, ::MIME"text/plain", kd::KDTree)
     _show(io, kd, 0)
 end
 
-function Base.findin(p::SVector{N}, s::Vector{S}) where {N,S<:Shape{N}}
+function Base.findfirst(p::SVector{N}, s::Vector{S}) where {N,S<:Shape{N}}
     for i in eachindex(s)
         if p ∈ s[i]
-            return Nullable{S}(s[i])
+            return s[i]
         end
     end
-    return Nullable{S}()
+    return nothing
 end
 
-function Base.findin(p::SVector{N}, kd::KDTree{N}) where {N}
+function Base.findfirst(p::SVector{N}, kd::KDTree{N}) where {N}
     if isempty(kd.s)
         if p[kd.ix] ≤ kd.x
-            return findin(p, kd.left)
+            return findfirst(p, kd.left)
         else
-            return findin(p, kd.right)
+            return findfirst(p, kd.right)
         end
     else
-        return findin(p, kd.s)
+        return findfirst(p, kd.s)
     end
 end
 
 """
-    findin(p::AbstractVector, kd::KDTree)
+    findfirst(p::AbstractVector, kd::KDTree)
 
-Return a `Nullable` container of the first shape in `kd` that contains
-the point `p`, or an `isnull` container if no shape was found.
+Return the first shape in `kd` that contains the point `p`; return `nothing` otherwise.
 """
-Base.findin(p::AbstractVector, kd::KDTree{N}) where {N} = findin(SVector{N}(p), kd)
-Base.findin(p::AbstractVector, s::Vector{<:Shape{N}}) where {N} = findin(SVector{N}(p), s)
+Base.findfirst(p::AbstractVector, kd::KDTree{N}) where {N} = findfirst(SVector{N}(p), kd)
+Base.findfirst(p::AbstractVector, s::Vector{<:Shape{N}}) where {N} = findfirst(SVector{N}(p), s)

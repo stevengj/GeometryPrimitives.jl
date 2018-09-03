@@ -53,7 +53,7 @@ function edgedir_quadsect(cbits::UInt8)
     elseif cbits==0x33 || cbits==~0x33
         dir = Y
     else
-        assert(cbits==0x55 || cbits==~0x55)
+        @assert cbits==0x55 || cbits==~0x55
         dir = X
     end
 
@@ -62,18 +62,18 @@ end
 
 # Return the volume fraction when the plane croses a set of four parallel edges.
 function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
-    const w = edgedir_quadsect(cbits)
-    const ∆w = vxl[P][w] - vxl[N][w]
+    w = edgedir_quadsect(cbits)
+    ∆w = vxl[P][w] - vxl[N][w]
 
-    const u, v, _w = UVW[w]
-    const nu, nv, nw = nout[u], nout[v], nout[w]
-    const mean_cepts = 4nr₀
+    u, v, _w = UVW[w]
+    nu, nv, nw = nout[u], nout[v], nout[w]
+    mean_cepts = 4nr₀
     for sv = NP, su = NP
         mean_cepts -= nu*vxl[su][u] + nv*vxl[sv][v]
     end
     mean_cepts /=  nw * 4∆w
 
-    const sw = nw>0 ? N : P  # nw cannot be 0
+    sw = nw>0 ? N : P  # nw cannot be 0
     return abs(mean_cepts - vxl[sw][w]/∆w)
 end
 
@@ -83,17 +83,17 @@ end
 # Assume count_ones(cbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
 # cbits.
 function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
-    const s = (nout.<0) .+ 1
-    const c = corner(vxl, s[X], s[Y], s[Z])  # corner coordinates
-    const ∆ = vxl[P] - vxl[N]  # vxl edges
-    const nc = nout .* c
+    s = (nout.<0) .+ 1
+    c = corner(vxl, s[X], s[Y], s[Z])  # corner coordinates
+    ∆ = vxl[P] - vxl[N]  # vxl edges
+    nc = nout .* c
     rmax, rmid, rmin =  abs.(((nr₀-sum(nc)) .+ nc) ./ nout - c) ./ ∆ # (lengths from corner to intercetps) / (voxel edges)
 
-    # const nx, ny, nz = nout
-    # const sx, sy, sz = ((nx≥0 ? N : P), (ny≥0 ? N : P), (nz≥0 ? N : P))  # signs of corner
-    # const cx, cy, cz = vxl[nX][sx], vxl[nY][sy], vxl[nZ][sz]  # corner coordinates
-    # const ∆x, ∆y, ∆z = vxl[nX][nP]-vxl[nX][nN], vxl[nY][nP]-vxl[nY][nN], vxl[nZ][nP]-vxl[nZ][nN]  # voxel edges
-    # const nxcx, nycy, nzcz = nx*cx, ny*cy, nz*cz
+    # nx, ny, nz = nout
+    # sx, sy, sz = ((nx≥0 ? N : P), (ny≥0 ? N : P), (nz≥0 ? N : P))  # signs of corner
+    # cx, cy, cz = vxl[nX][sx], vxl[nY][sy], vxl[nZ][sz]  # corner coordinates
+    # ∆x, ∆y, ∆z = vxl[nX][nP]-vxl[nX][nN], vxl[nY][nP]-vxl[nY][nN], vxl[nZ][nP]-vxl[nZ][nN]  # voxel edges
+    # nxcx, nycy, nzcz = nx*cx, ny*cy, nz*cz
     # rmax, rmid, rmin =  # (lengths from corner to intercetps) / (voxel edges)
     #     abs((nr₀-nycy-nzcz)/nx-cx)/∆x, abs((nr₀-nzcz-nxcx)/ny-cy)/∆y, abs((nr₀-nxcx-nycy)/nz-cz)/∆z
 
@@ -103,7 +103,7 @@ function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits:
     if rmax < rmid; rmax, rmid = rmid, rmax; end
 
     # Calculate the volume of the triangular pyramid, and cut off appropriate corners.
-    const tmax = 1 - 1/rmax
+    tmax = 1 - 1/rmax
     rvol_core = 1 + tmax + tmax^2
 
     # Below, if rmax == Inf, rmid and rmin must be ≤ 1 in exact arithmetic and subtraction
@@ -137,11 +137,10 @@ half-space is described by the boundary plane.  The boundary plane is described 
 outward normal vector `nout = [nx, ny, nz]` and a point `r₀ = [rx, ry, rz]` on the plane.
 `nout` does not have to be normalized.
 """
-# Return the volume fraction rvol = vol(voxel ⋂ half-space) / vol(voxel).
 function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
-    const nr₀ = nout⋅r₀
-    const cbits, n_on = corner_bits(vxl, nout, nr₀)
-    const n_in = count_ones(cbits)  # number of corners contained
+    nr₀ = nout⋅r₀
+    cbits, n_on = corner_bits(vxl, nout, nr₀)
+    n_in = count_ones(cbits)  # number of corners contained
 
     if n_in == 8  # voxel is inside half-space
         rvol = 1.
@@ -152,7 +151,7 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
     elseif n_in ≤ 4 # general cases with n_in ≤ 4
         rvol = rvol_gensect(vxl, nout, nr₀, cbits)
     else  # general cases with n_in ≥ 5
-        assert(n_in ≥ 5)
+        @assert n_in ≥ 5
         rvol = 1. - rvol_gensect(vxl, .-nout, -nr₀, ~cbits)
     end
 

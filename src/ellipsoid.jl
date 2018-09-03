@@ -9,11 +9,11 @@ mutable struct Ellipsoid{N,L,D} <: Shape{N,L,D}
 end
 
 Ellipsoid(c::SVector{N}, r::SVector{N},
-          axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
+          axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N,Float64}(I),  # columns are axes unit vectors
           data::D=nothing) where {N,L,D} =
-    Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+    Ellipsoid{N,L,D}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
-Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=eye(length(c)), data=nothing) =
+Ellipsoid(c::AbstractVector, r::AbstractVector, axes::AbstractMatrix=Matrix{Float64}(I,length(c),length(c)), data=nothing) =
     (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes), data))
 
 Ellipsoid(b::Box{N,L,D}, data::D=nothing) where {N,L,D} = Ellipsoid{N,L,D}(b.c, (b.r).^-2, b.p, data)
@@ -49,8 +49,8 @@ function surfpt_nearby(x::SVector{N}, b::Ellipsoid{N}) where {N}
     px₀ = (t*b.ri2 + 1) .* px  # surface point in ellipsoid coordinates
 
     # Transform back to the original coordinates.
-    x₀ = At_mul_B(b.p, px₀) + b.c
-    nout = normalize(At_mul_B(b.p, px .* b.ri2))
+    x₀ = transpose(b.p) * px₀ + b.c
+    nout = normalize(transpose(b.p) * (px .* b.ri2))
 
     return x₀, nout
 end
@@ -63,7 +63,7 @@ function boundpts(b::Ellipsoid{N}) where {N}
     # directions, respectively.
 
     r2 = 1 ./ b.ri2
-    ndir = b.p  # Cartesian directions in ellipsoid coordinates: b.p * eye(3)
+    ndir = b.p  # Cartesian directions in ellipsoid coordinates: b.p * I
 
     # In the ellipsoid coordinates, the point on the ellipsoid where the direction normal is
     # n is (n .* r2) / sqrt(r2' * n.^2).  Below is the broadcasted version of this over a
@@ -88,7 +88,7 @@ function bounds(b::Ellipsoid{N}) where {N}
     #
     # For the efficient implementation of NaN-ignoring maximum, see
     # https://discourse.julialang.org/t/inconsistency-between-findmax-and-maximum-with-respect-to-nan/4214/8
-    m = reducedim((x,y) -> x<y ? y : x, M, Val{2}, -Inf)[:,1]
+    m = reduce((x,y) -> x<y ? y : x, M, init=-Inf, dims=Val(2))[:,1]
 
     return (b.c-m,b.c+m)
 end

@@ -9,11 +9,11 @@ mutable struct Box{N,L,D} <: Shape{N,L,D}
 end
 
 Box(c::SVector{N}, d::SVector{N},
-    axes::SMatrix{N,N,<:Real,L}=@SMatrix(eye(N)),  # columns are axes unit vectors
+    axes::SMatrix{N,N,<:Real,L}=SMatrix{N,N,Float64}(I),  # columns are axes unit vectors
     data::D=nothing) where {N,L,D} =
-    Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,Val{1}))), data)
+    Box{N,L,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
-Box(c::AbstractVector, d::AbstractVector, axes=eye(length(c)), data=nothing) =
+Box(c::AbstractVector, d::AbstractVector, axes=Matrix{Float64}(I,length(c),length(c)), data=nothing) =
     (N = length(c); Box(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
 
 Base.:(==)(b1::Box, b2::Box) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
@@ -29,13 +29,13 @@ end
 
 function surfpt_nearby(x::SVector{N}, b::Box{N}) where {N}
     ax = inv(b.p)  # axes
-    n = (b.p ./ sqrt.(sum(abs2,b.p,Val{2})[:,1]))  # rows are direction normals; do not take transpose
+    n = (b.p ./ sqrt.(sum(abs2,b.p,dims=Val(2))[:,1]))  # rows are direction normals; do not take transpose
 
     # Below, θ[i], the angle between ax[:,i] and n[i,:], is always acute, because the
     # diagonal entries of ax * b.p are positive (= 1).
-    cosθ = sum(ax.*n', Val{1})[1,:]
-    # cosθ = diag(n*ax)  # faster than SVector(ntuple(i -> ax[:,i]⋅n[i,:], Val{N}))
-    # assert(all(cosθ .≥ 0))
+    cosθ = sum(ax.*n', dims=Val(1))[1,:]
+    # cosθ = diag(n*ax)  # faster than SVector(ntuple(i -> ax[:,i]⋅n[i,:], Val(N)))
+    # @assert all(cosθ .≥ 0)
 
     d = b.p * (x - b.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
@@ -64,6 +64,6 @@ signmatrix(b::Box{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
 
 function bounds(b::Box)
     A = inv(b.p) .* b.r'
-    m = maximum(abs.(A * signmatrix(b)), Val{2})[:,1] # extrema of all 2^N corners of the box
+    m = maximum(abs.(A * signmatrix(b)), dims=Val(2))[:,1] # extrema of all 2^N corners of the box
     return (b.c-m,b.c+m)
 end

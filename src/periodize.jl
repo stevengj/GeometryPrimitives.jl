@@ -9,7 +9,7 @@ function periodize(shp::S,  # shape to periodize
     # R = n₁a₁ + n₂a₂ + n₃a₃ is a translation vector for A = [a₁ a₂ a₃].  Find the ranges of
     # n₁, n₂, n₃ to test the inclusion of R in the Shape ∆range.
     #
-    # The minimum and maximum nᵢ's to examine can be found by finding nᵢ's at the corners of
+    # The minimum and maximum nᵢ's to examine can be found by findfirstg nᵢ's at the corners of
     # the bounding box of ∆range.  This can be easily seen by unitary transformation of aᵢ's
     # into the Cartesian directions.  The transformation transforms the lattice planes into
     # the x-, y-, z-normal planes, and the bounding box into a parallelpiped.  The nᵢ's at
@@ -21,9 +21,9 @@ function periodize(shp::S,  # shape to periodize
     # the bounding box of the parallelpiped, whose corner indices are the minimum and
     # maximum nᵢ's.
     ∆bound = bounds(∆range)  # (SVector{3}, SVector{3}): bounds of translation range
-    nmax_fl = SVector(ntuple(k->-Inf, Val{N}))  # [-Inf, -Inf, -Inf] for N = 3
-    nmin_fl = SVector(ntuple(k->Inf, Val{N}))  # [Inf, Inf, Inf] for N = 3
-    rcart = CartesianRange(ntuple(k->2, Val{N}))  # (2,2,2) for N = 3
+    nmax_fl = SVector(ntuple(k->-Inf, Val(N)))  # [-Inf, -Inf, -Inf] for N = 3
+    nmin_fl = SVector(ntuple(k->Inf, Val(N)))  # [Inf, Inf, Inf] for N = 3
+    rcart = CartesianIndices(ntuple(k->2, Val(N)))  # (2,2,2) for N = 3
     for icart = rcart  # icart: CartesianIndex (see, e.g., https://julialang.org/blog/2016/02/iteration)
         cnr = map((∆b1,∆b2,i)-> i==1 ? ∆b1 : ∆b2, ∆bound[1], ∆bound[2], SVector(icart.I))  # SVector: corner of ∆bound (note icart.I[k] = 1 or 2)
         n_fl = A \ cnr  # SVector: A * n_fl = corner
@@ -38,10 +38,10 @@ function periodize(shp::S,  # shape to periodize
     # For nᵢ's within the range calculated above, check if R = n₁a₁ + n₂a₂ + n₃a₃ is within
     # the Shape ∆range.  If it is, then create a shape transformed by R.
     nshape = prod((nmax.-nmin).+1)  # tentative number of shapes
-    shp_array = Vector{S}(nshape)  # preallocation (will be truncated later)
+    shp_array = Vector{S}(undef, nshape)  # preallocation (will be truncated later)
     ishape = 0
     nrange = map((n1,n2)->n1:n2, nmin.data, nmax.data)  # e.g., (1:10, 1:10, 1:10) for N = 3
-    for n = CartesianRange(nrange)  # n: CartesianIndex
+    for n = CartesianIndices(nrange)  # n: CartesianIndex
 		∆ = A * SVector(n.I)  # lattice vector R
 		if ∆ ∈ ∆range
 			shape = translate(shp, ∆)
