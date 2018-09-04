@@ -326,7 +326,7 @@ end
             #
             # using PyPlot
             # clf()
-            # axes(aspect="equal")
+            # axis("equal")
             # pcolor(X, Y, V, cmap="gray_r")
             #
             # using PyCall
