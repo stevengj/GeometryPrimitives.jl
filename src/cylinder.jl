@@ -61,10 +61,8 @@ function endcircles(s::Cylinder{2})
 end
 
 function endcircles(s::Cylinder{3})
-    u = abs(s.a[3]) < abs(s.a[1]) ? SVector(0,0,1) : SVector(1,0,0)
-    b1 = cross(s.a, u)
-    b2 = cross(b1, s.a)
-    axes = @SMatrix [s.a[1] b1[1] b2[1]; s.a[2] b1[2] b2[2]; s.a[3] b1[3] b2[3]]
+    u, v = orthoaxes(s.a)
+    axes = [u v s.a]  # SMatrix; no allocations
     return (Ellipsoid(s.c + s.a*s.h2, SVector(0.0, s.r, s.r), axes), # top disk
             Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r, s.r), axes))  # bottom disk
 end
