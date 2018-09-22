@@ -1,5 +1,6 @@
 module GeometryPrimitives
 using Compat, StaticArrays, LinearAlgebra
+using Statistics: mean
 export Shape, surfpt_nearby, normal, bounds, translate
 
 abstract type Shape{N,L,D} end # a solid geometric shape in N dimensions (L = N*N is needed in some shapes, e.g., Box)
@@ -33,9 +34,9 @@ end
 
 
 include("box.jl")
-include("cylinder.jl")
 include("ellipsoid.jl")
 include("sphere.jl")
+include("prism/prism.jl")
 include("periodize.jl")
 include("kdtree.jl")
 include("vxlcut.jl")
