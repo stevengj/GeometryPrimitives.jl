@@ -10,10 +10,27 @@ Base.ndims(o::Shape{N}) where {N} = N
 # Therefore, always call them with type assertions.  See
 # https://discourse.julialang.org/t/extending-base-in-type-stably/5341/12
 # https://github.com/JuliaLang/julia/issues/23210
-Base.in(x::AbstractVector, o::Shape{N}) where {N} = SVector{N}(x) in o
-surfpt_nearby(x::AbstractVector, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
-normal(x::AbstractVector, o::Shape) = surfpt_nearby(x, o)[2]
-translate(o::Shape{N}, ∆::AbstractVector) where {N} = translate(o, SVector{N}(∆))
+Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = SVector{N}(x) in o
+surfpt_nearby(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
+normal(x::AbstractVector{<:Real}, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
+translate(o::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(o, SVector{N}(∆))
+
+function orthoaxes(n::SVector{3,<:Real})
+    u_temp = abs(n[3]) < abs(n[1]) ? SVector(0,0,1) : SVector(1,0,0)
+    v = normalize(n × u_temp)
+    u = v × n
+
+    return u, v
+end
+
+function orthoaxes(n::SVector{N,<:Real}) where {N}
+    u_temp = abs(n[3]) < abs(n[1]) ? SVector(0,0,1) : SVector(1,0,0)
+    v = normalize(n × u_temp)
+    u = v × n
+
+    return u, v
+end
+
 
 include("box.jl")
 include("cylinder.jl")

@@ -126,5 +126,5 @@ end
 
 Return the first shape in `kd` that contains the point `p`; return `nothing` otherwise.
 """
-Base.findfirst(p::AbstractVector, kd::KDTree{N}) where {N} = findfirst(SVector{N}(p), kd)
-Base.findfirst(p::AbstractVector, s::Vector{<:Shape{N}}) where {N} = findfirst(SVector{N}(p), s)
+Base.findfirst(p::AbstractVector{<:Real}, kd::KDTree{N}) where {N} = findfirst(SVector{N}(p), kd)
+Base.findfirst(p::AbstractVector{<:Real}, s::Vector{<:Shape{N}}) where {N} = findfirst(SVector{N}(p), s)

@@ -1,31 +1,31 @@
 export Cylinder
 
 mutable struct Cylinder{N,L,D} <: Shape{N,L,D}
-    c::SVector{N,Float64} # Cylinder center
-    r::Float64          # radius
-    a::SVector{N,Float64}   # axis unit vector
-    h2::Float64         # height * 0.5
-    data::D             # auxiliary data
+    c::SVector{N,Float64}  # center
+    r::Float64  # radius
+    a::SVector{N,Float64}  # axis unit vector
+    h2::Float64  # height * 0.5
+    data::D  # auxiliary data
     Cylinder{N,L,D}(c,r,a,h2,data) where {N,L,D} = new(c,r,a,h2,data)  # suppress default outer constructor
 end
 
-Cylinder(c::SVector{N}, r::Real, a::SVector{N}, h::Real=Inf, data::D=nothing) where {N,D} =
+Cylinder(c::SVector{N,<:Real}, r::Real, a::SVector{N,<:Real}, h::Real=Inf, data::D=nothing) where {N,D} =
     Cylinder{N,N*N,D}(c, r, normalize(a), 0.5h, data)
 
-Cylinder(c::AbstractVector, r::Real, a::AbstractVector, h::Real=Inf, data=nothing) =
+Cylinder(c::AbstractVector{<:Real}, r::Real, a::AbstractVector{<:Real}, h::Real=Inf, data=nothing) =
     (N = length(c); Cylinder(SVector{N}(c), r, SVector{N}(a), h, data))
 
 Base.:(==)(s1::Cylinder, s2::Cylinder) = s1.c==s2.c && s1.r==s2.r && s1.a==s2.a && s1.h2==s2.h2 && s1.data==s2.data
 Base.hash(s::Cylinder, h::UInt) = hash(s.c, hash(s.r, hash(s.a, hash(s.h2, hash(s.data, hash(:Cylinder, h))))))
 
-function Base.in(x::SVector{N}, s::Cylinder{N}) where {N}
+function Base.in(x::SVector{N,<:Real}, s::Cylinder{N}) where {N}
     d = x - s.c
     p = d ⋅ s.a
-    abs(p) > s.h2 && return false
-    return sum(abs2, d - p*s.a) ≤ s.r^2
+
+    return abs(p) ≤ s.h2 && sum(abs2, d-p*s.a) ≤ s.r^2
 end
 
-function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
+function surfpt_nearby(x::SVector{N,<:Real}, s::Cylinder{N}) where {N}
     d = x - s.c
     p = d ⋅ s.a  # scalar
     q = d - p*s.a  # vector
@@ -49,13 +49,13 @@ function surfpt_nearby(x::SVector{N}, s::Cylinder{N}) where {N}
     return x+∆x, nout
 end
 
-translate(s::Cylinder{N,L,D}, ∆::SVector{N}) where {N,L,D} = Cylinder{N,L,D}(s.c+∆, s.r, s.a, s.h2, s.data)
+translate(s::Cylinder{N,L,D}, ∆::SVector{N,<:Real}) where {N,L,D} = Cylinder{N,L,D}(s.c+∆, s.r, s.a, s.h2, s.data)
 
 const rotate2 = @SMatrix [0.0 1.0; -1.0 0.0] # 2x2 90° rotation matrix
 
 function endcircles(s::Cylinder{2})
     b = rotate2 * s.a
-    axes = @SMatrix [s.a[1] b[1]; s.a[2] b[2]]
+    axes = [s.a b]  # SMatrix; no allocations
     return (Ellipsoid(s.c + s.a*s.h2, SVector(0.0, s.r), axes),
             Ellipsoid(s.c - s.a*s.h2, SVector(0.0, s.r), axes))
 end

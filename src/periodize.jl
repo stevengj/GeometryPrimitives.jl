@@ -1,6 +1,6 @@
 export periodize
 
-periodize(shp::Shape{N}, A::AbstractMatrix, ∆range::Shape{N}) where {N} = periodize(shp, SMatrix{N,N}(A), ∆range)
+periodize(shp::Shape{N}, A::AbstractMatrix{<:Real}, ∆range::Shape{N}) where {N} = periodize(shp, SMatrix{N,N}(A), ∆range)
 
 function periodize(shp::S,  # shape to periodize
                    A::SMatrix{N,N,<:Real},  # columns: primitive vectors of Bravais lattice
