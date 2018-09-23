@@ -1,3 +1,8 @@
+# Even though shapes are specified with real geometric parameters, the size of voxels can be
+# complex when the underlying space is stretched by complex factors.  So, we allow complex
+# `vxl` below.  Even in such a case, r₀ and nout are still real.  (Maybe this condition
+# should be relaxed later.)
+
 export volfrac
 
 const X, Y, Z = 1, 2, 3
@@ -6,7 +11,7 @@ const UVW = YZX, ZXY, XYZ
 const N, P = 1, 2  # negative, positive
 const NP = (N, P)
 
-corner(vxl::NTuple{2,SVector{3,<:Real}}, sx::Integer, sy::Integer, sz::Integer) =
+corner(vxl::NTuple{2,SVector{3,<:Number}}, sx::Integer, sy::Integer, sz::Integer) =
     SVector(vxl[sx][X], vxl[sy][Y], vxl[sz][Z])
 
 # Calculate the bit array that indicates corner contained-ness.
@@ -15,9 +20,9 @@ corner(vxl::NTuple{2,SVector{3,<:Real}}, sx::Integer, sy::Integer, sz::Integer) 
 # the half space defined by the plane, an 0 otherwise.  The 8 corners of the voxel are
 # indexed 1 through 8 in the order of (---), (+--), (-+-), (++-), (--+), (+-+), (-++), (+++),
 # where, e.g., (+--) indicates the corner at the +x, -y, -z corner.
-function corner_bits(vxl::NTuple{2,SVector{3}},  # two ends of solid diagonal of voxel
-                     nout::SVector{3}, # unit outward normal of plane
-                     nr₀)  # equation of plane: nout⋅(r - r₀) = 0, or nout⋅r = nr₀
+function corner_bits(vxl::NTuple{2,SVector{3,<:Number}},  # two ends of solid diagonal of voxel
+                     nout::SVector{3,<:Real}, # unit outward normal of plane
+                     nr₀::Real)  # equation of plane: nout⋅(r - r₀) = 0, or nout⋅r = nr₀
     cbits = 0x00
     bit = 0x01
     n_on = 0
@@ -61,7 +66,7 @@ function edgedir_quadsect(cbits::UInt8)
 end
 
 # Return the volume fraction when the plane croses a set of four parallel edges.
-function rvol_quadsect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
+function rvol_quadsect(vxl::NTuple{2,SVector{3,<:Number}}, nout::SVector{3,<:Real}, nr₀, cbits::UInt8)
     w = edgedir_quadsect(cbits)
     ∆w = vxl[P][w] - vxl[N][w]
 
@@ -82,7 +87,7 @@ end
 #
 # Assume count_ones(cbits) ≤ 4.  Othewise, call this function with flipped nout, nr₀,
 # cbits.
-function rvol_gensect(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, nr₀, cbits::UInt8)
+function rvol_gensect(vxl::NTuple{2,SVector{3,<:Number}}, nout::SVector{3,<:Real}, nr₀::Real, cbits::UInt8)
     s = (nout.<0) .+ 1
     c = corner(vxl, s[X], s[Y], s[Z])  # corner coordinates
     ∆ = vxl[P] - vxl[N]  # vxl edges
@@ -137,7 +142,7 @@ half-space is described by the boundary plane.  The boundary plane is described 
 outward normal vector `nout = [nx, ny, nz]` and a point `r₀ = [rx, ry, rz]` on the plane.
 `nout` does not have to be normalized.
 """
-function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
+function volfrac(vxl::NTuple{2,SVector{3,<:Number}}, nout::SVector{3,<:Real}, r₀::SVector{3,<:Real})
     nr₀ = nout⋅r₀
     cbits, n_on = corner_bits(vxl, nout, nr₀)
     n_in = count_ones(cbits)  # number of corners contained
@@ -158,7 +163,7 @@ function volfrac(vxl::NTuple{2,SVector{3}}, nout::SVector{3}, r₀::SVector{3})
     return rvol
 end
 
-volfrac(vxl::NTuple{2,SVector{2}}, nout::SVector{2}, r₀::SVector{2}) =
+volfrac(vxl::NTuple{2,SVector{2,<:Number}}, nout::SVector{2,<:Real}, r₀::SVector{2,<:Real}) =
     volfrac((SVector(vxl[N][1],vxl[N][2],0), SVector(vxl[P][1],vxl[P][2],1)),
             SVector(nout[1], nout[2], 0),
             SVector(r₀[1], r₀[2], 0))
