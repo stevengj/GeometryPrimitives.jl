@@ -157,10 +157,10 @@ isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2):
 #= Polygonal prism =#
 const PolygonalPrism{K,M} = Prism{Polygon{K,M,Nothing}}
 
-# Below, if we called Cylinder(c, ...) in the function body, it would call the inner
-# constructor Prism{Sphere{2,4,Nothing}}(c, ...) because Cylinder = Prism{Sphere{2,4,Nothing}},
+# Below, if we called PolygonalPrism(c, ...) in the function body, it would call the inner
+# constructor Prism{Polygon{K,M,Nothing}}(c, ...) because PolygonalPrism = Prism{Polygon{K,M,Nothing}},
 # which is not what we want.
-# To call the outer constructor of Prism, we should call Prism(c, ...) instead of Cylinder(c, ...).
+# To call the outer constructor of Prism, we should call Prism(c, ...) instead of PolygonalPrism(c, ...).
 PolygonalPrism(c::SVector{3,<:Real},
                v::SMatrix{K,2,<:Real},
                h::Real=Inf,
