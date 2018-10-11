@@ -120,4 +120,4 @@ end
 
 
 include("cylinder.jl")
-include("polygonal.jl")
+include("polygon.jl")

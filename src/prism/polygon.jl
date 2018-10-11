@@ -16,7 +16,7 @@ end
 function Polygon(v::SMatrix{K,2,<:Real}, data::D=nothing) where {K,D}
     # Sort the vertices in the counter-clockwise direction
     w = v .- mean(v, dims=Val(1))  # v in center-of-mass coordinates
-    ϕ = mod.(atan.(w[:,2], w[:,1]), 2π)  # SVector{K}: angle of vertices between 0 and 2π
+    ϕ = mod.(atan.(w[:,2], w[:,1]), 2π)  # SVector{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
     if !issorted(ϕ)
         # Do this only when ϕ is not sorted, because the following uses allocations.
         ind = MVector{K}(sortperm(ϕ))  # sortperm(::SVector) currently returns Vector, not MVector
