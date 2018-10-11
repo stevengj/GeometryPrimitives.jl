@@ -102,7 +102,8 @@ end
 
 function Base.findfirst(p::SVector{N}, s::Vector{S}) where {N,S<:Shape{N}}
     for i in eachindex(s)
-        if p ∈ s[i]
+        b = bounds(s[i])
+        if all(b[1] .< p .< b[2]) && p ∈ s[i]  # check if p is within bounding box is faster
             return s[i]
         end
     end

@@ -162,7 +162,7 @@ const PolygonalPrism{K,M} = Prism{Polygon{K,M,Nothing}}
 # which is not what we want.
 # To call the outer constructor of Prism, we should call Prism(c, ...) instead of PolygonalPrism(c, ...).
 PolygonalPrism(c::SVector{3,<:Real},
-               v::SMatrix{K,2,<:Real},
+               v::SMatrix{K,2,<:Real},  # 2D coordinates of base vertices in projected prism coordinates
                h::Real=Inf,
                a::SVector{3,<:Real}=SVector(0.0,0.0,1.0),
                data=nothing) where {K} =
@@ -175,9 +175,10 @@ PolygonalPrism(c::AbstractVector{<:Real},  # center of prism
                data=nothing) =
     (K = size(v,1); PolygonalPrism(SVector{3}(c), SMatrix{K,2}(v), h, SVector{3}(a), data))
 
+# Return the bounds of the center cut with respect to the prism center.
 function bounds_ctrcut(s::PolygonalPrism{K}) where {K}
     ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
-    v = [s.b.v @SVector(zeros(K))]  # SMatrix{K,3}: vectices in 3D axis coordinates
+    v = [s.b.v @SVector(zeros(K))]  # SMatrix{K,3}: 3D vectices in prism axis coordinates
     w = v * ax'  # SMatrix{K,3}: vertices in external coordinates (equivalent to (ax * v')')
 
     return minimum(w, dims=Val(1))[1,:], maximum(w, dims=Val(1))[1,:]

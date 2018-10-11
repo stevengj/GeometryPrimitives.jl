@@ -20,10 +20,11 @@ Cylinder(c::AbstractVector{<:Real},  # center of cylinder
          data=nothing) =
     Cylinder(SVector{3}(c), r, h, SVector{3}(a), data)
 
+# Return the bounds of the center cut with respect to the prism center.
 function bounds_ctrcut(s::Cylinder)
     ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
     r = s.b.r
-    el = Ellipsoid(s.c, SVector(r,r,0), ax)
+    el = Ellipsoid(SVector(0.0,0.0,0.0), SVector(r,r,0.0), ax)  # center is set at origin to return bounds with respect to prism center
 
     return bounds(el)
 end
