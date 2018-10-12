@@ -87,18 +87,14 @@ function surfpt_nearby(x::SVector{3,<:Real}, s::Prism)
 
     if isouta && isoutb  # x outside in both axis and base dimensions
         surf = SVector(surfb[1], surfb[2], surfa[3])
-        if onbnda && onbndb
-            nout = noutb + nouta
-        else
-            nout = y - surf
-        end
+        nout = (onbnda && onbndb) ? (noutb + nouta) : (y - surf)
         nout = normalize(nout)
     elseif !isouta && isoutb  # x outside in base dimensions, but inside prism in axis dimension
         (surf, nout) = (surfb, noutb)
     elseif isouta && !isoutb # x outside in axis dimension, but inside prism in base dimensions
         (surf, nout) = (surfa, nouta)
     else  # !isouta && !isoutb: x strictly inside prism
-        (surf, nout) = abs∆a ≤ abs∆b ? (surfa, nouta) : (surfb, noutb)
+        (surf, nout) = (abs∆a ≤ abs∆b) ? (surfa, nouta) : (surfb, noutb)
     end
 
     return ax*(surf+s.c), ax*nout
