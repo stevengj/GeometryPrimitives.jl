@@ -43,7 +43,7 @@ Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,1); Polygon(SMatr
 
 Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n && s1.data==s2.data  # assume sorted v
 Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n && s1.data==s2.data  # assume sorted v
-Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Prism, h))))
+Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Polygon, h))))
 
 Base.in(x::SVector{2,<:Real}, s::Polygon) = all(sum(s.n .* (x' .- s.v), dims=Val(2)) .≤ 0)
 
