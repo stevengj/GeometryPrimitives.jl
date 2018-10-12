@@ -61,8 +61,8 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Box{N}) where {N}
     d = b.p * (x - b.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
     absd = abs.(d)
-    onbound = abs.(b.r.-absd) .≤ Base.rtoldefault(Float64) .* b.r  # basically b.r .≈ absd but faster
-    isout = (b.r.<absd) .| onbound
+    onbnd = abs.(b.r.-absd) .≤ Base.rtoldefault(Float64) .* b.r  # basically b.r .≈ absd but faster
+    isout = (b.r.<absd) .| onbnd
     ∆ = (b.r .- absd) .* cosθ  # entries can be negative
     if count(isout) == 0  # x strictly inside box; ∆ all positive
         l∆x, i = findmin(∆)  # find closest face
@@ -71,15 +71,15 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Box{N}) where {N}
     else  # x outside box or on boundary in one or multiple directions
         ∆x = n' * (∆ .* isout)  # project out .!isout directions
 
-        # Below, (.!isout .| onbound) tests if each entry of ∆ (not ∆x) is either projected
+        # Below, (.!isout .| onbnd) tests if each entry of ∆ (not ∆x) is either projected
         # out or on the boundary.  If the ith entry of ∆ is projected out, ∆x (not ∆) does
         # not have any component in the n[i,:] direction.  Even if the ith entry of ∆ is not
         # projected out, if it is too small then ∆x barely has any component in the n[i,:]
         # direction.  If all the entries of ∆ satisfy one of the two conditions, ∆x ≈ 0 and
-        # we cannot use -∆x for nout.  In that case, take n'*onbound as nout.  When x is
-        # outside the box only in one dimension, n'*onbound is basically the row of n along
+        # we cannot use -∆x for nout.  In that case, take n'*onbnd as nout.  When x is
+        # outside the box only in one dimension, n'*onbnd is basically the row of n along
         # that dimension, which reduces to normalize(-∆x) even if ∆x is very small.
-        nout = all(.!isout .| onbound) ? n'*onbound : -∆x
+        nout = all(.!isout .| onbnd) ? n'*onbnd : -∆x
         nout = normalize(nout)
     end
 
