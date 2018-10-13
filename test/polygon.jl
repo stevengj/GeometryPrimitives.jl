@@ -1,5 +1,5 @@
 @testset "Triangle" begin
-    r = 1  # radius
+    r = 2  # radius
     b = regpoly(3, r)  # regular triangle with side = √3r/2
 
     va = [0,r]  # apex
@@ -35,7 +35,7 @@
     @test b ≈ Polygon([va vl vr]')
     @test Polygon([va vl vr]') == Polygon([va vr vl]') == Polygon([vl va vr]') == Polygon([vl vr va]') == Polygon([vr va vl]') == Polygon([vr vl va]')
     @test b ≈ isosceles((vl,vr), 1.5r)
-end  # @testset "regular triangle"
+end  # @testset "Triangle"
 
 
 @testset "Triangular prism" begin
