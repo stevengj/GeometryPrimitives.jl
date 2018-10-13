@@ -1,4 +1,4 @@
-@testset "Triangle" begin
+@testset "triangle" begin
     r = 2  # radius
     b = regpoly(3, r)  # regular triangle with side = √3r/2
 
@@ -35,10 +35,10 @@
     @test b ≈ Polygon([va vl vr]')
     @test Polygon([va vl vr]') == Polygon([va vr vl]') == Polygon([vl va vr]') == Polygon([vl vr va]') == Polygon([vr va vl]') == Polygon([vr vl va]')
     @test b ≈ isosceles((vl,vr), 1.5r)
-end  # @testset "Triangle"
+end  # @testset "triangle"
 
 
-@testset "Triangular prism" begin
+@testset "triangular prism" begin
     r = 1
     h2 = 1.1
     c = Prism([0,0,0], regpoly(3,r), 2h2)
@@ -74,10 +74,10 @@ end  # @testset "Triangle"
     @test checkbounds(c)
 
     @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, regpoly(3,r), 2h2))
-end  # @testset "Triangular prism"
+end  # @testset "triangular prism"
 
 
-@testset "Triangular prism, rotated" begin
+@testset "triangular prism, rotated" begin
     ax1 = normalize([1,0,-1])
     ax2 = [0,1,0]
     ax3 = normalize([1,0,1])  # ax3 = ax1 × ax2
@@ -118,4 +118,4 @@ end  # @testset "Triangular prism"
     @test checkbounds(c)
 
     @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, regpoly(3,r), 2h2, ax))
-end  # @testset "Triangular prism, rotated"
+end  # @testset "triangular prism, rotated"
