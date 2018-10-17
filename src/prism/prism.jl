@@ -119,3 +119,4 @@ end
 
 include("cylinder.jl")
 include("polygon.jl")
+include("sector.jl")
