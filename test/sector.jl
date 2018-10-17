@@ -135,3 +135,17 @@ end  # @testset "Sector, acute angle"
 
     @test (∆ = rand(3); translate(b,∆) ≈ SectoralPrism([c;0]+∆, r, ϕ, ∆ϕ, 2h2))
 end  # @testset "Half pipe"
+
+@testset "Half pipe, rotated" begin
+    ϕ = π/2  # start angle
+    ∆ϕ = π
+    r = 2  # radius
+    h2 = 1.1
+    θ = π/6  # tilt angle measured from z-axis towards x-axis
+    ax = [sin(θ), 0, cos(θ)]
+
+    b = SectoralPrism([0,0,0], r, ϕ, ∆ϕ, 2h2, ax)
+
+    @test bounds(b) ≈ ([-r*cos(θ)-h2*sin(θ),-r,-h2*cos(θ)], [h2*sin(θ),r,r*sin(θ)+h2*cos(θ)])
+    @test checkbounds(b)
+end  # Half pipe, rotated

@@ -159,10 +159,43 @@ function bounds_ctrcut(s::SectoralPrism)
 
         return a₁₂*l, a₁₂*u
     else  # prism axes are not aligned with Cartesian directions
-        # The tight bounding box is not calculated; defaults to a larger box.
-        r = s.b.r
-        el = Ellipsoid(SVector(0.0,0.0,0.0), SVector(r,r,0.0), ax)  # center is set at origin to return bounds with respect to prism center
+        b = s.b
+        r = b.r
 
-        return bounds(el)
+        el = Ellipsoid(SVector(0.0,0.0,0.0), SVector(r,r,0.0), ax)  # center is set at origin to return bounds with respect to prism center
+        bp = boundpts(el)  # SMatrix{3,3}: boundary points; all three columns of b are free of NaN because no column of ax is aligned with Cartesian directions
+        bp′ = s.p * bp  # SMatrix{3,3}: bp in prism coordinates
+        bp2′ = bp′[SVector(1,2),:]  # SMatrix{2,3}: in each column of bp′, third entry is in axis dimension, so must be zero mathematically
+
+        ϕ = atan.(bp2′[2,:], bp2′[1,:])  # SVector{3}: angles of boundary points in base plane
+        ϕsym = [ϕ; ϕ.+π]  # SVector{6}: include symmetric points with respect to base center
+        ϕall = [ϕsym; SVector(b.ϕ₀-b.∆ϕ2, b.ϕ₀+b.∆ϕ2)]  # SVector{8}: angles of all boundary point candidates, except base center
+
+        bpall′ = r .* [cos.(ϕall) sin.(ϕall) @SVector(zeros(8))]'  # SMatrix{3,8}: each column is boundary point candidate in prism coordinates
+        bpall = ax * bpall′  # SMatrix{3,8}: each column is boundary point candidate in external coordinates
+        bpallc = [bpall SVector(0.0,0.0,0.0)]  # SMatrix{3,9}: include base center
+        ind = abs.(distangle.(ϕsym, b.ϕ₀)) .≤ b.∆ϕ2  # SVector{6}: indices of angles contained in base arc
+        indallc = [ind; SVector(true,true,true)]  # SVector{9}: include arc ends and base center
+
+        xs = bpallc[1,:]
+        ys = bpallc[2,:]
+        zs = bpallc[3,:]
+
+        # It might be possible to implement the following more efficiently using reduce().
+        xmin = ymin = zmin = Inf
+        xmax = ymax = zmax = -Inf
+        for i = 1:9
+            if indallc[i]
+                xmin = min(xmin, xs[i])
+                ymin = min(ymin, ys[i])
+                zmin = min(zmin, zs[i])
+
+                xmax = max(xmax, xs[i])
+                ymax = max(ymax, ys[i])
+                zmax = max(zmax, zs[i])
+            end
+        end
+
+        return (SVector(xmin,ymin,zmin), SVector(xmax,ymax,zmax))
     end
 end
