@@ -24,4 +24,4 @@ end
 
 translate(s::Sphere{N,L,D}, ∆::SVector{N,<:Real}) where {N,L,D} = Sphere{N,L,D}(s.c+∆, s.r, s.data)
 
-bounds(s::Sphere) = (s.c-s.r, s.c+s.r)
+bounds(s::Sphere) = (s.c.-s.r, s.c.+s.r)
