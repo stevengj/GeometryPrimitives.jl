@@ -6,10 +6,6 @@ environment:
 platform:
   - x64 # 64-bit
 
-matrix:
-  allow_failures:
-  - julia_version: nightly
-
 branches:
   only:
     - master
@@ -19,7 +15,7 @@ install:
 
 build_script:
   - echo "%JL_BUILD_SCRIPT%"
-  - C:\julia\bin\julia -e "%JL_BUILD_SCRIPT%";
+  - C:\julia\bin\julia -e "%JL_BUILD_SCRIPT%"
 
 test_script:
   - echo "%JL_TEST_SCRIPT%"

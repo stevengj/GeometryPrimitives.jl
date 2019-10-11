@@ -5,6 +5,9 @@ os:
 julia:
   - 1.2
   - nightly
+branches:
+  only:
+    - master
 notifications:
   email: false
 codecov: true
