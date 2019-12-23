@@ -113,10 +113,10 @@ end
 
 #= Factory methods =#
 # Regular polygon
-function regpoly(::Val{K},
-                 r::Real,
-                 θ::Real=π/2,
-                 c::SVector{2,<:Real}=SVector(0.0,0.0),
+function regpoly(::Val{K},  # number of vertices
+                 r::Real,  # distance between center and each vertex
+                 θ::Real=π/2,  # angle from +x-direction towards first vertex; π/2 corresponds to +y-direction
+                 c::SVector{2,<:Real}=SVector(0.0,0.0),  # center location
                  data=nothing) where {K}
     ∆θ = 2π / K
 

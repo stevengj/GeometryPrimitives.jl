@@ -3,9 +3,9 @@ using Random: MersenneTwister
 using Statistics: mean
 
 const rtol = Base.rtoldefault(Float64)
-const one⁻ = 1 - rtol  # slightly less than 1
-const one⁺ = 1 + rtol  # slightly greater than 1
-const one⁻⁻, one⁺⁺ = 0.9, 1.1
+const one⁻ = 1 - rtol  # scale factor slightly less than 1
+const one⁺ = 1 + rtol  # scare factor slightly greater than 1
+const one⁻⁻, one⁺⁺ = 0.9, 1.1  # (scale factor less than 1, scale factor greater than 1)
 
 Base.isapprox(a::Tuple, b::Tuple; kws...) = all(p -> isapprox(p...; kws...), zip(a,b))
 const rng = MersenneTwister(0) # test with reproducible pseudorandom numbers

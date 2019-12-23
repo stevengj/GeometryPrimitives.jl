@@ -1,6 +1,6 @@
 @testset "triangle" begin
     r = 2  # radius
-    b = regpoly(3, r)  # regular triangle with side = √3r/2
+    b = regpoly(3, r)  # regular triangle inscribed in circle of radius r (triangel side = √3r/2)
 
     va = [0,r]  # apex
     vl = [-√3r/2,-r/2]  # left vertex
