@@ -10,12 +10,12 @@ export Box
 # and the component must be 1.  This also means that each row of Box.p is orthogononal to
 # two box axes, and therefore normal to the face spanned by the two box axes.  (Note that
 # the rows of Box.p are not unit normals to the faces, becuase they are not unit vectors.)
-mutable struct Box{N,L,D} <: Shape{N,L,D}
+mutable struct Box{N,N²,D} <: Shape{N,N²,D}
     c::SVector{N,Float64}  # center of box
     r::SVector{N,Float64}  # "radii" (semi-axes) in axis directions
-    p::SMatrix{N,N,Float64,L}  # projection matrix to box coordinates
+    p::SMatrix{N,N,Float64,N²}  # projection matrix to box coordinates
     data::D  # auxiliary data
-    Box{N,L,D}(c,r,p,data) where {N,L,D} = new(c,r,p,data)  # suppress default outer constructor
+    Box{N,N²,D}(c,r,p,data) where {N,N²,D} = new(c,r,p,data)  # suppress default outer constructor
 end
 
 Box(c::SVector{N,<:Real},
@@ -86,7 +86,7 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Box{N}) where {N}
     return x+∆x, nout
 end
 
-translate(b::Box{N,L,D}, ∆::SVector{N,<:Real}) where {N,L,D} = Box{N,L,D}(b.c+∆, b.r, b.p, b.data)
+translate(b::Box{N,N²,D}, ∆::SVector{N,<:Real}) where {N,N²,D} = Box{N,N²,D}(b.c+∆, b.r, b.p, b.data)
 
 signmatrix(b::Box{1}) = SMatrix{1,1}(1)
 signmatrix(b::Box{2}) = SMatrix{2,2}(1,1, -1,1)

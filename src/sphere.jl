@@ -1,10 +1,10 @@
 export Sphere
 
-mutable struct Sphere{N,L,D} <: Shape{N,L,D}
+mutable struct Sphere{N,N²,D} <: Shape{N,N²,D}
     c::SVector{N,Float64}  # center of sphere
     r::Float64  # radius
     data::D  # auxiliary data
-    Sphere{N,L,D}(c,r,data) where {N,L,D} = new(c,r,data)  # suppress default outer constructor
+    Sphere{N,N²,D}(c,r,data) where {N,N²,D} = new(c,r,data)  # suppress default outer constructor
 end
 
 Sphere(c::SVector{N,<:Real}, r::Real, data::D=nothing) where {N,D} = Sphere{N,N*N,D}(c, r, data)
@@ -22,6 +22,6 @@ function surfpt_nearby(x::SVector{N,<:Real}, s::Sphere{N}) where {N}
     return s.c+s.r*nout, nout
 end
 
-translate(s::Sphere{N,L,D}, ∆::SVector{N,<:Real}) where {N,L,D} = Sphere{N,L,D}(s.c+∆, s.r, s.data)
+translate(s::Sphere{N,N²,D}, ∆::SVector{N,<:Real}) where {N,N²,D} = Sphere{N,N²,D}(s.c+∆, s.r, s.data)
 
 bounds(s::Sphere) = (s.c.-s.r, s.c.+s.r)

@@ -6,11 +6,11 @@ export regpoly, isosceles
 # Assume the followings for the polygon represented by Polygon:
 # - The polygon is convex.
 # - The vertices are listed in the counter-clockwise order around the origin.
-mutable struct Polygon{K,M,D} <: Shape{2,4,D}  # M = 2K
-    v::SMatrix{K,2,Float64,M}  # vertices
-    n::SMatrix{K,2,Float64,M}  # direction normals to edges
+mutable struct Polygon{K,K2,D} <: Shape{2,4,D}  # K2 = 2K
+    v::SMatrix{K,2,Float64,K2}  # vertices
+    n::SMatrix{K,2,Float64,K2}  # direction normals to edges
     data::D  # auxiliary data
-    Polygon{K,M,D}(v,n,data) where {K,M,D} = new(v,n,data)  # suppress default outer constructor
+    Polygon{K,K2,D}(v,n,data) where {K,K2,D} = new(v,n,data)  # suppress default outer constructor
 end
 
 function Polygon(v::SMatrix{K,2,<:Real}, data::D=nothing) where {K,D}
@@ -102,7 +102,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     return surf, nout
 end
 
-translate(s::Polygon{K,M,D}, ∆::SVector{2,<:Real}) where {K,M,D} = Polygon{K,M,D}(s.v .+ transpose(∆), s.n, s.data)
+translate(s::Polygon{K,K2,D}, ∆::SVector{2,<:Real}) where {K,K2,D} = Polygon{K,K2,D}(s.v .+ transpose(∆), s.n, s.data)
 
 function bounds(s::Polygon)
     l = minimum(s.v, dims=Val(1))[1,:]
@@ -155,10 +155,10 @@ isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2):
 
 
 #= Polygonal prism =#
-const PolygonalPrism{K,M} = Prism{Polygon{K,M,Nothing}}
+const PolygonalPrism{K,K2} = Prism{Polygon{K,K2,Nothing}}
 
 # Below, if we called PolygonalPrism(c, ...) in the function body, it would call the inner
-# constructor Prism{Polygon{K,M,Nothing}}(c, ...) because PolygonalPrism = Prism{Polygon{K,M,Nothing}},
+# constructor Prism{Polygon{K,K2,Nothing}}(c, ...) because PolygonalPrism = Prism{Polygon{K,K2,Nothing}},
 # which is not what we want.
 # To call the outer constructor of Prism, we should call Prism(c, ...) instead of PolygonalPrism(c, ...).
 PolygonalPrism(c::SVector{3,<:Real},

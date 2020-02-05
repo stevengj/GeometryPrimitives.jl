@@ -3,7 +3,7 @@ using Compat, StaticArrays, LinearAlgebra
 using Statistics: mean
 export Shape, surfpt_nearby, normal, bounds, translate
 
-abstract type Shape{N,L,D} end # a solid geometric shape in N dimensions (L = N*N is needed in some shapes, e.g., Box)
+abstract type Shape{N,N²,D} end # a solid geometric shape in N dimensions (N² = N*N is needed in some shapes, e.g., Box)
 
 Base.ndims(o::Shape{N}) where {N} = N
 
