@@ -163,7 +163,23 @@ function volfrac(vxl::NTuple{2,SVector{3,<:Number}}, nout::SVector{3,<:Real}, r�
     return rvol
 end
 
+# volfrac() for a 2D voxel (= pixel).
+# - Turn the nout and r₀ into 3D vectors on the xy-plane.
+# - Turn the pixel into a 3D voxel whose base is the pixel and the height is 1.
+# - Pass these 3D objects to volfrac() for 3D.
 volfrac(vxl::NTuple{2,SVector{2,<:Number}}, nout::SVector{2,<:Real}, r₀::SVector{2,<:Real}) =
-    volfrac((SVector(vxl[N][1],vxl[N][2],0), SVector(vxl[P][1],vxl[P][2],1)),
+    volfrac((SVector(vxl[N][1], vxl[N][2], 0), SVector(vxl[P][1], vxl[P][2], 1)),
             SVector(nout[1], nout[2], 0),
             SVector(r₀[1], r₀[2], 0))
+
+# volfrac() for 1D voxel (= line segment).
+# - Turn the nout and r₀ into 3D vectors along the z-axis
+# - Turn the line segment into a 3D voxel whose height is the line segment and the base is a 1×1 pixel.
+# - Pass these 3D objects to volfrac() for 3D.
+#
+# volfrac() for 1D can be implemented from scratch without calling volfrac() for 3D, but
+# let's keep it this way for now.
+volfrac(vxl::NTuple{2,SVector{1,<:Number}}, nout::SVector{1,<:Real}, r₀::SVector{1,<:Real}) =
+    volfrac((SVector(0, 0, vxl[N][1]), SVector(1, 1, vxl[P][1])),
+            SVector(0, 0, nout[1]),
+            SVector(0, 0, r₀[1]))
