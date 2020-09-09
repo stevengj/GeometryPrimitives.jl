@@ -5,7 +5,7 @@ periodize(shp::Shape{N}, A::AbstractMatrix{<:Real}, ∆range::Shape{N}) where {N
 function periodize(shp::S,  # shape to periodize
                    A::SMatrix{N,N,<:Real},  # columns: primitive vectors of Bravais lattice
                    ∆range::Shape{N}  # range of translation vectors; boundaries included
-                  ) where {N,S<:Shape{N}}
+				   ) where {N,S<:Shape{N}}
     # R = n₁a₁ + n₂a₂ + n₃a₃ is a translation vector for A = [a₁ a₂ a₃].  Find the ranges of
     # n₁, n₂, n₃ to test the inclusion of R in the Shape ∆range.
     #
