@@ -1,5 +1,5 @@
 module GeometryPrimitives
-using Compat, StaticArrays, LinearAlgebra
+using StaticArrays, LinearAlgebra
 using Statistics: mean
 
 export Shape, Shape1, Shape2, Shape3
