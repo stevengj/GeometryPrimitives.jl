@@ -51,7 +51,7 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Ellipsoid{N}) where {N}
     t = -q24 / (1 + √(1 - q24 * q64))
 
     # From t, recover x₀ = x + t*∇f(x).
-    px₀ = (t*b.ri2 + 1) .* px  # surface point in ellipsoid coordinates
+    px₀ = (t*b.ri2 .+ 1) .* px  # surface point in ellipsoid coordinates
 
     # Transform back to the original coordinates.
     x₀ = b.p' * px₀ + b.c
