@@ -1,7 +1,7 @@
 # GeometryPrimitives
 
-[![Build status](https://github.com/stevengj/GeometryPrimitives.jl/workflows/CI/badge.svg)](https://github.com/stevengj/GeometryPrimitives.jl/actions)
-[![codecov.io](http://codecov.io/github/stevengj/GeometryPrimitives.jl/coverage.svg?branch=master)](http://codecov.io/github/stevengj/GeometryPrimitives.jl?branch=master)
+[![CI](https://github.com/stevengj/GeometryPrimitives.jl/workflows/CI/badge.svg)](https://github.com/stevengj/GeometryPrimitives.jl/actions)
+[![Codecov](http://codecov.io/github/stevengj/GeometryPrimitives.jl/coverage.svg?branch=master)](http://codecov.io/github/stevengj/GeometryPrimitives.jl?branch=master)
 
 This package provides a set of geometric primitive types (spheres, boxes,
 cylinders, and so on) and operations on them designed to enable piecewise
