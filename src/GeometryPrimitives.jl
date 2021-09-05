@@ -5,7 +5,7 @@ using Statistics: mean
 export Shape, Shape1, Shape2, Shape3
 export surfpt_nearby, normal, bounds, translate
 
-abstract type Shape{N,N²,D} end # a solid geometric shape in N dimensions (N² = N*N is needed in some shapes, e.g., Box)
+abstract type Shape{N,N²,D} end # a solid geometric shape in N dimensions (N² = N*N is needed in some shapes, e.g., Cuboid)
 const Shape1 = Shape{1,1}
 const Shape2 = Shape{2,4}
 const Shape3 = Shape{3,9}
@@ -38,7 +38,7 @@ function orthoaxes(n::SVector{N,<:Real}) where {N}
 end
 
 
-include("box.jl")
+include("cuboid.jl")
 include("ellipsoid.jl")
 include("sphere.jl")
 include("prism/prism.jl")

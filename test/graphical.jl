@@ -4,11 +4,11 @@
     c = Cylinder([0,0,0], 1/4, 1)  # circular base
     # c = PolygonalPrism([0,0,0], [1/4 1/4; -1/4 1/4; -1/4 -1/4; 1/4 -1/4], 1)  # square base
     # c = Prism([0,0,0], regpoly(5, 1/4), 1)  # regular pentagonal base
-    ∆range = Box([0,0,0], [8,2*√3,1])
+    ∆range = Cuboid([0,0,0], [8,2*√3,1])
     A = [1 0 0; 0.5 √3/2 0; 0 0 1]'
     c_array = periodize(c, A, ∆range)
 
-    b = Box([0,0,0], [12,4*√3,1])
+    b = Cuboid([0,0,0], [12,4*√3,1])
     bnd = bounds(b)
     x = range(bnd[1][1], stop=bnd[2][1], length=120*5)
     y = range(bnd[1][2], stop=bnd[2][2], length=70*5)

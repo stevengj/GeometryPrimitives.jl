@@ -50,7 +50,7 @@ end
 @testset "GeometryPrimitives" begin
 
 include("sphere.jl")
-include("box.jl")
+include("cuboid.jl")
 include("ellipsoid.jl")
 include("cylinder.jl")
 include("polygon.jl")

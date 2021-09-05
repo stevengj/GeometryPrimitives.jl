@@ -20,7 +20,7 @@
 
     @test (∆ = rand(2); translate(e,∆) ≈ Ellipsoid([0,0]+∆, [1,2]))
 
-    b = Box([0,0], [2,4])
+    b = Cuboid([0,0], [2,4])
     eb = Ellipsoid(b)
     @test e == eb
     @test hash(e) == hash(eb)
@@ -57,7 +57,7 @@ end  # @testset "Ellipsoid"
 
     @test (∆ = rand(2); translate(er,∆) ≈ Ellipsoid([0,0]+∆, [2,3], R))
 
-    br = Box([0,0], 2*[2,3], R)
+    br = Cuboid([0,0], 2*[2,3], R)
     ebr = Ellipsoid(br)
     @test er == ebr
     @test hash(er) == hash(ebr)

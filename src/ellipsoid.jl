@@ -20,7 +20,7 @@ Ellipsoid(c::AbstractVector{<:Real},  # center of ellipsoid
           data=nothing) =
     (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes), data))
 
-Ellipsoid(b::Box{N,N²,D}, data::D=nothing) where {N,N²,D} = Ellipsoid{N,N²,D}(b.c, (b.r).^-2, b.p, data)
+Ellipsoid(b::Cuboid{N,N²,D}, data::D=nothing) where {N,N²,D} = Ellipsoid{N,N²,D}(b.c, (b.r).^-2, b.p, data)
 
 Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p==b2.p && b1.data==b2.data
 Base.isapprox(b1::Ellipsoid, b2::Ellipsoid) = b1.c≈b2.c && b1.ri2≈b2.ri2 && b1.p≈b2.p && b1.data==b2.data
