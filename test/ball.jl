@@ -1,5 +1,5 @@
-@testset "Sphere" begin
-    s = Sphere([3,4], 5)
+@testset "Ball" begin
+    s = Ball([3,4], 5)
     @test s == deepcopy(s)
     @test hash(s) == hash(deepcopy(s))
     @test ndims(s) == 2
@@ -17,7 +17,7 @@
     @test normal([-1,2],s) == normalize([-1,2] - [3,4])
     @test bounds(s) == ([-2,-1],[8,9])
     @test checkbounds(s)
-    @test checkbounds(Sphere([1,2,3], 2))
+    @test checkbounds(Ball([1,2,3], 2))
 
-    @test (∆ = rand(2); translate(s,∆) ≈ Sphere([3,4]+∆, 5))
+    @test (∆ = rand(2); translate(s,∆) ≈ Ball([3,4]+∆, 5))
 end

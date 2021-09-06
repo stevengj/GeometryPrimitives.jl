@@ -40,7 +40,7 @@ end
 
 include("cuboid.jl")
 include("ellipsoid.jl")
-include("sphere.jl")
+include("ball.jl")
 include("prism/prism.jl")
 include("periodize.jl")
 include("kdtree.jl")

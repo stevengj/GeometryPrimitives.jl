@@ -1,9 +1,9 @@
 export Cylinder
 
-const Cylinder = Prism{Sphere{2,4,Nothing}}
+const Cylinder = Prism{Ball{2,4,Nothing}}
 
 # Below, if we called Cylinder(c, ...) in the function body, it would call the inner
-# constructor Prism{Sphere{2,4,Nothing}}(c, ...) because Cylinder = Prism{Sphere{2,4,Nothing}},
+# constructor Prism{Ball{2,4,Nothing}}(c, ...) because Cylinder = Prism{Ball{2,4,Nothing}},
 # which is not what we want.
 # To call the outer constructor of Prism, we should call Prism(c, ...) instead of Cylinder(c, ...).
 Cylinder(c::SVector{3,<:Real},
@@ -11,7 +11,7 @@ Cylinder(c::SVector{3,<:Real},
          h::Real=Inf,
          a::SVector{3,<:Real}=SVector(0.0,0.0,1.0),
          data=nothing) where {D} =
-    (â = normalize(a); Prism(c, Sphere(SVector(0.0,0.0),r), h, [orthoaxes(â)... â], data))
+    (â = normalize(a); Prism(c, Ball(SVector(0.0,0.0),r), h, [orthoaxes(â)... â], data))
 
 Cylinder(c::AbstractVector{<:Real},  # center of cylinder
          r::Real,  # radius of base

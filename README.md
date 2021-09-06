@@ -3,7 +3,7 @@
 [![CI](https://github.com/stevengj/GeometryPrimitives.jl/workflows/CI/badge.svg)](https://github.com/stevengj/GeometryPrimitives.jl/actions)
 [![Codecov](http://codecov.io/github/stevengj/GeometryPrimitives.jl/coverage.svg?branch=master)](http://codecov.io/github/stevengj/GeometryPrimitives.jl?branch=master)
 
-This package provides a set of geometric primitive types (spheres, cuboids, cylinders, and
+This package provides a set of geometric primitive types (balls, cuboids, cylinders, and
 so on) and operations on them designed to enable piecewise definition of functions,
 especially for finite-difference and finite-element simulations, in the Julia language.
 

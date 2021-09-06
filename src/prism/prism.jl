@@ -25,7 +25,7 @@
 # ∆x, because the surface point x + ∆x can be easily calculated.  Let's consider fixing this
 # in the future.
 #
-# Hmmm...  Because the surface point is not calculated by adding ∆x to x for Sphere and
+# Hmmm...  Because the surface point is not calculated by adding ∆x to x for Ball and
 # Ellipse, maybe implemeting a function returning ∆x is not a very good idea.  Then, it may
 # not be a bad idea to calculate ∆x by subtracting x from the surface point.  Let's try to
 # implement the general prism.
