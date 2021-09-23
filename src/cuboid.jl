@@ -36,12 +36,10 @@ Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b
 Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p && b1.data==b2.data
 Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Cuboid, h)))))
 
-function Base.in(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
+function level(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     d = b.p * (x - b.c)
-    for i = 1:N
-        abs(d[i]) > b.r[i] && return false  # boundary is considered inside
-    end
-    return true
+
+    return maximum(abs.(d) ./ b.r) - 1.0
 end
 
 function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}

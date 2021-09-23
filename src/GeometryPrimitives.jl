@@ -3,7 +3,7 @@ using StaticArrays, LinearAlgebra
 using Statistics: mean
 
 export Shape, Shape1, Shape2, Shape3
-export surfpt_nearby, normal, bounds, translate
+export level, surfpt_nearby, normal, bounds, translate
 
 abstract type Shape{N,N²,D} end # a solid geometric shape in N dimensions (N² = N*N is needed in some shapes, e.g., Cuboid)
 const Shape1 = Shape{1,1}
@@ -13,10 +13,11 @@ const Shape3 = Shape{3,9}
 Base.ndims(o::Shape{N}) where {N} = N
 
 # The following functions return Any due to the limitations of Julia's dispatch system.
-# Therefore, always call them with type assertions.  See
+# Therefore, always call them with return type assertions.  See
 # https://discourse.julialang.org/t/extending-base-in-type-stably/5341/12
 # https://github.com/JuliaLang/julia/issues/23210
-Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = SVector{N}(x) in o
+level(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(SVector{N}(x), o)
+Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(x,o) ≤ 0
 surfpt_nearby(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
 normal(x::AbstractVector{<:Real}, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
 translate(o::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(o, SVector{N}(∆))

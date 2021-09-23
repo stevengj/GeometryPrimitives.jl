@@ -14,7 +14,7 @@ Base.:(==)(s1::Ball, s2::Ball) = s1.c==s2.c && s1.r==s2.r && s1.data==s2.data
 Base.isapprox(s1::Ball, s2::Ball) = s1.c≈s2.c && s1.r≈s2.r && s1.data==s2.data
 Base.hash(s::Ball, h::UInt) = hash(s.c, hash(s.r, hash(s.data, hash(:Ball, h))))
 
-Base.in(x::SVector{N,<:Real}, s::Ball{N}) where {N} = sum(abs2, x - s.c) ≤ s.r^2
+level(x::SVector{N,<:Real}, s::Ball{N}) where {N} = √(sum(abs2, x - s.c) / s.r^2) - 1.0
 
 function surfpt_nearby(x::SVector{N,<:Real}, s::Ball{N}) where {N}
     nout = x==s.c ? SVector(ntuple(k -> k==1 ? 1.0 : 0.0, Val(N))) :  # nout = e₁ for x == s.c
