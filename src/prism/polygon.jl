@@ -151,7 +151,7 @@ isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2):
           h::Real,  # height drawn normal to base; direction is such that base pt 1, base pt 2, apex are put in counter-clockwise order
           data=nothing) = isosceles(SVector{2}.(base), h, data)
 
-# To-dos: parallegram, rhombus, ...
+# To-dos: parallegram, rhombus, isoscles trapezoid, ...
 
 
 #= Polygonal prism =#
