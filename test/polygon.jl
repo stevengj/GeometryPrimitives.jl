@@ -32,8 +32,8 @@
 
     @test (∆ = rand(2); translate(b,∆) ≈ regpoly(3,r,π/2,∆))
 
-    @test b ≈ Polygon([va vl vr]')
-    @test Polygon([va vl vr]') == Polygon([va vr vl]') == Polygon([vl va vr]') == Polygon([vl vr va]') == Polygon([vr va vl]') == Polygon([vr vl va]')
+    @test b ≈ Polygon([va vl vr])
+    @test Polygon([va vl vr]) == Polygon([va vr vl]) == Polygon([vl va vr]) == Polygon([vl vr va]) == Polygon([vr va vl]) == Polygon([vr vl va])
     @test b ≈ isosceles((vl,vr), 1.5r)
 end  # @testset "triangle"
 
