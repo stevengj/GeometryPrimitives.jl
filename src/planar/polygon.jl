@@ -43,11 +43,11 @@ Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,2); Polygon(SMatr
 # Regular polygon
 function Polygon{K}(c::SVector{2,<:Real},
                     r::Real,  # distance between center and each vertex
-                    θ::Real=π/2,  # angle from +x-direction towards first vertex; π/2 corresponds to +y-direction
+                    θ::Real=0.0,  # angle from +y-direction towards first vertex
                     data=nothing) where {K}
     ∆θ = 2π / K
 
-    θs = θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
+    θs = π/2 + θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
     v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
 
     return Polygon(v, data)
