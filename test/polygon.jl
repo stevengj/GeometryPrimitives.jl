@@ -34,7 +34,7 @@
 
     @test b ≈ Polygon([va vl vr])
     @test Polygon([va vl vr]) == Polygon([va vr vl]) == Polygon([vl va vr]) == Polygon([vl vr va]) == Polygon([vr va vl]) == Polygon([vr vl va])
-    @test b ≈ isosceles((vl,vr), 1.5r)
+    @test b ≈ Isosceles((vl,vr), 1.5r)
 end  # @testset "triangle"
 
 

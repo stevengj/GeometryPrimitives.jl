@@ -142,7 +142,7 @@ regpoly(k::Integer,  # number of vertices
    regpoly(Val(k), r, θ, SVector{2}(c), data)
 
 # Isosceles triangle
-function isosceles(base::NTuple{2,SVector{2,<:Real}},
+function Isosceles(base::NTuple{2,SVector{2,<:Real}},
                    h::Real,
                    data=nothing)
     m = (base[1] + base[2]) / 2  # midpoint of base
@@ -155,9 +155,9 @@ function isosceles(base::NTuple{2,SVector{2,<:Real}},
     return Polygon(v, data)
 end
 
-isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2): two end points of base
+Isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2): two end points of base
           h::Real,  # height drawn normal to base; direction is such that base pt 1, base pt 2, apex are put in counter-clockwise order
-          data=nothing) = isosceles(SVector{2}.(base), h, data)
+          data=nothing) = Isosceles(SVector{2}.(base), h, data)
 
 # To-dos: parallegram, rhombus, isoscles trapezoid, ...
 
