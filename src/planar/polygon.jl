@@ -1,5 +1,4 @@
-export Polygon, PolygonalPrism
-export Isosceles  # constructor-like methods (a.k.a factory methods)
+export Polygon
 
 #= Polygon (for a base shape) =#
 
@@ -137,56 +136,4 @@ function bounds(s::Polygon)
     u = maximum(s.v, dims=Val(2))[:,1]
 
     return (l, u)
-end
-
-#= Factory methods =#
-# Isosceles triangle
-function Isosceles(base::NTuple{2,SVector{2,<:Real}},
-                   h::Real,
-                   data=nothing)
-    m = (base[1] + base[2]) / 2  # midpoint of base
-    bvec = normalize(base[2] - base[1])  # unit direction of base
-    hvec = [-bvec[2], bvec[1]]  # unit direction of height
-    p = m + h.*hvec  # apex
-
-    v = [base[1] base[2] p]  # vertices
-
-    return Polygon(v, data)
-end
-
-Isosceles(base::NTuple{2,AbstractVector{<:Real}},  # (end point 1, end point 2): two end points of base
-          h::Real,  # height drawn normal to base; direction is such that base pt 1, base pt 2, apex are put in counter-clockwise order
-          data=nothing) = Isosceles(SVector{2}.(base), h, data)
-
-# To-dos: parallegram, rhombus, isoscles trapezoid, ...
-
-
-#= Polygonal prism =#
-const PolygonalPrism{K,K2} = Prism{Polygon{K,K2,Nothing}}
-
-# Below, if we called PolygonalPrism(c, ...) in the function body, it would call the inner
-# constructor Prism{Polygon{K,K2,Nothing}}(c, ...) because PolygonalPrism = Prism{Polygon{K,K2,Nothing}},
-# which is not what we want.
-# To call the outer constructor of Prism, we should call Prism(c, ...) instead of PolygonalPrism(c, ...).
-PolygonalPrism(c::SVector{3,<:Real},
-               v::SMatrix{2,K,<:Real},  # 2D coordinates of base vertices in projected prism coordinates
-               h::Real=Inf,
-               a::SVector{3,<:Real}=SVector(0.0,0.0,1.0),
-               data=nothing) where {K} =
-    (â = normalize(a); Prism(c, Polygon(v), h, [orthoaxes(â)... â], data))
-
-PolygonalPrism(c::AbstractVector{<:Real},  # center of prism
-               v::AbstractMatrix{<:Real},  # vertices of base polygon
-               h::Real=Inf,  # height of prism
-               a::AbstractVector{<:Real}=[0.0,0.0,1.0],  # axis direction of prism
-               data=nothing) =
-    (K = size(v,1); PolygonalPrism(SVector{3}(c), SMatrix{2,K}(v), h, SVector{3}(a), data))
-
-# Return the bounds of the center cut with respect to the prism center.
-function bounds_ctrcut(s::PolygonalPrism{K}) where {K}
-    p = inv(s.p)  # projection matrix to prism coordinates: rows are not only unit vectors, but also orthogonal
-    v = [s.b.v; @SMatrix(zeros(1,K))]  # SMatrix{3,K}: 3D vectices in prism axis coordinates
-    w = p * v  # SMatrix{3,K}: vertices in external coordinates
-
-    return minimum(w, dims=Val(2))[:,1], maximum(w, dims=Val(2))[:,1]
 end

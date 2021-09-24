@@ -39,12 +39,9 @@ function orthoaxes(n::SVector{N,<:Real}) where {N}
 end
 
 
-include("cuboid.jl")
-include("ellipsoid.jl")
-include("ball.jl")
+include("hyper/hyper.jl")
+include("planar/planar.jl")
 include("prism/prism.jl")
-include("periodize.jl")
-include("kdtree.jl")
-include("vxlcut.jl")
+include("util/util.jl")
 
 end # module

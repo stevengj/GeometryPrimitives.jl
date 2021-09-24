@@ -118,5 +118,5 @@ end
 
 
 include("cylinder.jl")
-include("polygon.jl")
-include("sector.jl")
+include("polygonal.jl")
+include("sectoral.jl")
