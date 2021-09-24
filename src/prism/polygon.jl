@@ -7,25 +7,25 @@ export regpoly, isosceles
 # - The polygon is convex.
 # - The vertices are listed in the counter-clockwise order around the origin.
 mutable struct Polygon{K,K2,D} <: Shape{2,4,D}  # K2 = 2K
-    v::SMatrix{K,2,Float64,K2}  # vertices
-    n::SMatrix{K,2,Float64,K2}  # direction normals to edges
+    v::SMatrix{2,K,Float64,K2}  # vertices
+    n::SMatrix{2,K,Float64,K2}  # direction normals to edges
     data::D  # auxiliary data
     Polygon{K,K2,D}(v,n,data) where {K,K2,D} = new(v,n,data)  # suppress default outer constructor
 end
 
-function Polygon(v::SMatrix{K,2,<:Real}, data::D=nothing) where {K,D}
+function Polygon(v::SMatrix{2,K,<:Real}, data::D=nothing) where {K,D}
     # Sort the vertices in the counter-clockwise direction
-    w = v .- mean(v, dims=Val(1))  # v in center-of-mass coordinates
-    ϕ = mod.(atan.(w[:,2], w[:,1]), 2π)  # SVector{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
+    w = v .- mean(v, dims=Val(2))  # v in center-of-mass coordinates
+    ϕ = mod.(atan.(w[2,:], w[1,:]), 2π)  # SVector{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
     if !issorted(ϕ)
         # Do this only when ϕ is not sorted, because the following uses allocations.
         ind = MVector{K}(sortperm(ϕ))  # sortperm(::SVector) currently returns Vector, not MVector
-        v = v[ind,:]  # SVector{K}: sorted v
+        v = v[:,ind]  # SVector{K}: sorted v
     end
 
     # Calculate the increases in angle between neighboring edges.
-    ∆v = vcat(diff(v, dims=Val(1)), SMatrix{1,2}(v[1,:]-v[end,:]))  # SMatrix{K,2}: edge directions
-    ∆z = ∆v[:,1] + im * ∆v[:,2]  # SVector{K}: edge directions as complex numbers
+    ∆v = hcat(diff(v, dims=Val(2)), SMatrix{2,1}(v[:,1]-v[:,end]))  # SMatrix{2,K}: edge directions
+    ∆z = ∆v[1,:] + im * ∆v[2,:]  # SVector{K}: edge directions as complex numbers
     icurr = ntuple(identity, Val(K-1))
     inext = ntuple(x->x+1, Val(K-1))
     ∆ϕ = angle.(∆z[SVector(inext)] ./ ∆z[SVector(icurr)])  # angle returns value between -π and π
@@ -33,23 +33,23 @@ function Polygon(v::SMatrix{K,2,<:Real}, data::D=nothing) where {K,D}
     # Check all the angle increases are positive.  If they aren't, the polygon is not convex.
     all(∆ϕ .> 0) || throw("v = $v should represent vertices of convex polygon.")
 
-    n = [∆v[:,2] -∆v[:,1]]  # outward normal directions to edges
-    n = n ./ hypot.(n[:,1],n[:,2])  # normalize
+    n = [∆v[2,:] -∆v[1,:]]'  # SMatrix{2,K}; outward normal directions to edges
+    n = n ./ hypot.(n[1,:], n[2,:])'  # normalize
 
     return Polygon{K,2K,D}(v,n,data)
 end
 
-Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,1); Polygon(SMatrix{K,2}(v), data))
+Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,2); Polygon(SMatrix{2,K}(v), data))
 
 Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n && s1.data==s2.data  # assume sorted v
 Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n && s1.data==s2.data  # assume sorted v
 Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Polygon, h))))
 
-Base.in(x::SVector{2,<:Real}, s::Polygon) = all(sum(s.n .* (x' .- s.v), dims=Val(2)) .≤ 0)
+Base.in(x::SVector{2,<:Real}, s::Polygon) = all(sum(s.n .* (x .- s.v), dims=Val(1)) .≤ 0)
 
 function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     # Calculate the signed distances from x to edge lines.
-    ∆xe = sum(s.n .* (x' .- s.v), dims=Val(2))[:,1]  # SVector{K}: values of equations of edge lines
+    ∆xe = sum(s.n .* (x .- s.v), dims=Val(1))[1,:]  # SVector{K}: values of equations of edge lines
     abs∆xe = abs.(∆xe)  # SVector{K}
 
     # Determine if x is outside of edges, inclusive.
@@ -69,16 +69,16 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
         # operation leads to allocations because it does not create an SVector.  Instead,
         # find the closest vertex directly, which is the surface point we are looking for
         # for cout = 2.
-        ∆xv = x' .- s.v
-        l∆xv = hypot.(∆xv[:,1], ∆xv[:,2])
+        ∆xv = x .- s.v
+        l∆xv = hypot.(∆xv[1,:], ∆xv[2,:])
         imin = argmin(l∆xv)
-        surf = s.v[imin,:]
+        surf = s.v[:,imin]
         imin₋₁ = mod1(imin-1,K)
 
         if onbnd[imin] && onbnd[imin₋₁]  # x is very close to vertex imin
-            nout = s.n[imin,:] + s.n[imin₋₁,:]
+            nout = s.n[:,imin] + s.n[:,imin₋₁]
         else
-            nout = x - s.v[imin,:]
+            nout = x - s.v[:,imin]
         end
         nout = normalize(nout)
     else  # cout ≤ 1 or cout ≥ 3
@@ -92,7 +92,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
         # Even for cout = 3, this seems to be a reasonable choice from a simple geometric
         # argument.
         imax = argmax(∆xe)
-        vmax, nmax = s.v[imax,:], s.n[imax,:]
+        vmax, nmax = s.v[:,imax], s.n[:,imax]
 
         ∆x = (nmax⋅(vmax-x)) .* nmax
         surf = x + ∆x
@@ -102,11 +102,11 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     return surf, nout
 end
 
-translate(s::Polygon{K,K2,D}, ∆::SVector{2,<:Real}) where {K,K2,D} = Polygon{K,K2,D}(s.v .+ transpose(∆), s.n, s.data)
+translate(s::Polygon{K,K2,D}, ∆::SVector{2,<:Real}) where {K,K2,D} = Polygon{K,K2,D}(s.v .+ ∆, s.n, s.data)
 
 function bounds(s::Polygon)
-    l = minimum(s.v, dims=Val(1))[1,:]
-    u = maximum(s.v, dims=Val(1))[1,:]
+    l = minimum(s.v, dims=Val(2))[:,1]
+    u = maximum(s.v, dims=Val(2))[:,1]
 
     return (l, u)
 end
@@ -121,7 +121,7 @@ function regpoly(::Val{K},  # number of vertices
     ∆θ = 2π / K
 
     θs = θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
-    v = c' .+ r .* [cos.(θs) sin.(θs)]  # SMatrix{K,2}: locations of vertices
+    v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
 
     return Polygon(v, data)
 end
@@ -142,7 +142,7 @@ function isosceles(base::NTuple{2,SVector{2,<:Real}},
     hvec = [-bvec[2], bvec[1]]  # unit direction of height
     p = m + h.*hvec  # apex
 
-    v = [base[1] base[2] p]'  # vertices
+    v = [base[1] base[2] p]  # vertices
 
     return Polygon(v, data)
 end
@@ -162,7 +162,7 @@ const PolygonalPrism{K,K2} = Prism{Polygon{K,K2,Nothing}}
 # which is not what we want.
 # To call the outer constructor of Prism, we should call Prism(c, ...) instead of PolygonalPrism(c, ...).
 PolygonalPrism(c::SVector{3,<:Real},
-               v::SMatrix{K,2,<:Real},  # 2D coordinates of base vertices in projected prism coordinates
+               v::SMatrix{2,K,<:Real},  # 2D coordinates of base vertices in projected prism coordinates
                h::Real=Inf,
                a::SVector{3,<:Real}=SVector(0.0,0.0,1.0),
                data=nothing) where {K} =
@@ -173,13 +173,13 @@ PolygonalPrism(c::AbstractVector{<:Real},  # center of prism
                h::Real=Inf,  # height of prism
                a::AbstractVector{<:Real}=[0.0,0.0,1.0],  # axis direction of prism
                data=nothing) =
-    (K = size(v,1); PolygonalPrism(SVector{3}(c), SMatrix{K,2}(v), h, SVector{3}(a), data))
+    (K = size(v,1); PolygonalPrism(SVector{3}(c), SMatrix{2,K}(v), h, SVector{3}(a), data))
 
 # Return the bounds of the center cut with respect to the prism center.
 function bounds_ctrcut(s::PolygonalPrism{K}) where {K}
-    ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
-    v = [s.b.v @SVector(zeros(K))]  # SMatrix{K,3}: 3D vectices in prism axis coordinates
-    w = v * ax'  # SMatrix{K,3}: vertices in external coordinates (equivalent to (ax * v')')
+    p = inv(s.p)  # projection matrix to prism coordinates: rows are not only unit vectors, but also orthogonal
+    v = [s.b.v; @SMatrix(zeros(1,K))]  # SMatrix{3,K}: 3D vectices in prism axis coordinates
+    w = p * v  # SMatrix{3,K}: vertices in external coordinates
 
-    return minimum(w, dims=Val(1))[1,:], maximum(w, dims=Val(1))[1,:]
+    return minimum(w, dims=Val(2))[:,1], maximum(w, dims=Val(2))[:,1]
 end
