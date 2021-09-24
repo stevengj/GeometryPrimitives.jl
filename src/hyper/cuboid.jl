@@ -21,16 +21,20 @@ mutable struct Cuboid{N,N²,D} <: Shape{N,N²,D}
 end
 
 Cuboid(c::SVector{N,<:Real},
-    d::SVector{N,<:Real},
-    axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I),
-    data::D=nothing) where {N,D} =
-    Cuboid{N,N*N,D}(c, 0.5d, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
+       s::SVector{N,<:Real},
+       axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I),
+       data::D=nothing) where {N,D} =
+    Cuboid{N,N*N,D}(c, 0.5s, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
 
 Cuboid(c::AbstractVector{<:Real},  # center of cuboid
-    d::AbstractVector{<:Real},  # size of cuboid in axis directions
-    axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c)),  # columns are axes vectors (each being parallel to two sets of faces in 3D)
-    data=nothing) =
-    (N = length(c); Cuboid(SVector{N}(c), SVector{N}(d), SMatrix{N,N}(axes), data))
+       s::AbstractVector{<:Real},  # size of cuboid in axis directions
+       axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c)),  # columns are axes vectors (each being parallel to two sets of faces in 3D)
+       data=nothing) =
+    (N = length(c); Cuboid(SVector{N}(c), SVector{N}(s), SMatrix{N,N}(axes), data))
+
+Cuboid(d::NTuple{2,AbstractVector{<:Real}},  # end points of diagonal
+       data=nothing) =
+    Cuboid((d[1]+d[2])/2, abs.(d[2]-d[1]))
 
 Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
 Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p && b1.data==b2.data

@@ -20,6 +20,12 @@
     @test checkbounds(Cuboid([0,0], [2,4], [1 1; 1 -1]))
 
     @test (∆ = rand(2); translate(b,∆) ≈ Cuboid([0,0]+∆, [2,4]))
+
+    b1 = Cuboid(([-1,-2],[1,2]))
+    b2 = Cuboid(([1,2],[-1,-2]))
+    b3 = Cuboid(([-1,2],[1,-2]))
+    b4 = Cuboid(([1,-2],[-1,2]))
+    @test b1 == b2 == b3 == b4 == b
 end  # @testset "Cuboid"
 
 
