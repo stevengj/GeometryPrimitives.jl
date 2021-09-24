@@ -34,12 +34,12 @@ Base.hash(s::Sector, h::UInt) = hash(s.c, hash(s.r, hash(s.ϕ₀, hash(s.∆ϕ2,
 
 distangle(ϕ::Real, ϕ₀:: Real) = rem(ϕ-ϕ₀, 2π, RoundNearest)  # ϕ measured from ϕ₀; result within [-π, π)
 
-function Base.in(x::SVector{2,<:Real}, s::Sector)
+function level(x::SVector{2,<:Real}, s::Sector)
     d = x - s.c
     ld = norm(d)
     ϕ = ld==0 ? s.ϕ₀ : atan(d[2], d[1])  # angle to x with respect to c
 
-    return ld ≤ s.r && abs(distangle(ϕ, s.ϕ₀)) ≤ s.∆ϕ2
+    return max(ld/s.r, abs(distangle(ϕ, s.ϕ₀)) / s.∆ϕ2) - 1.0
 end
 
 function surfpt_nearby(x::SVector{2,<:Real}, s::Sector)

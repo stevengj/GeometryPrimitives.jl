@@ -55,12 +55,12 @@ Base.:(==)(s1::Prism, s2::Prism) = s1.c==s2.c && s1.b==s2.b && s1.h2==s2.h2 && s
 Base.isapprox(s1::Prism, s2::Prism) = s1.c≈s2.c && s1.b≈s2.b && s1.h2≈s2.h2 && s1.p≈s2.p && s1.data==s2.data
 Base.hash(s::Prism, h::UInt) = hash(s.c, hash(s.b, hash(s.h2, hash(s.p, hash(s.data, hash(:Prism, h))))))
 
-function Base.in(x::SVector{3,<:Real}, s::Prism)
+function level(x::SVector{3,<:Real}, s::Prism)
     y = s.p * (x - s.c)  # coordinates after projection
     ya = y[3]  # scalar: coordinate in axis dimension
     yb = y[SVector(1,2)]  # SVector{2}: coordinate in base dimensions
 
-    return abs(ya) ≤ s.h2 && yb ∈ s.b
+    return max(abs(ya)/s.h2 - 1.0, level(yb,s.b))
 end
 
 function surfpt_nearby(x::SVector{3,<:Real}, s::Prism)

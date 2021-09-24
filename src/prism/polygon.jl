@@ -45,7 +45,15 @@ Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n && s1.data==s2.d
 Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n && s1.data==s2.data  # assume sorted v
 Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Polygon, h))))
 
-Base.in(x::SVector{2,<:Real}, s::Polygon) = all(sum(s.n .* (x .- s.v), dims=Val(1)) .≤ 0)
+function level(x::SVector{2,<:Real}, s::Polygon)
+    c = mean(s.v, dims=Val(2))  # center of mass
+    
+    d = sum(s.n .* (x .- c), dims=Val(1))
+    r = sum(s.n .* (s.v .- c), dims=Val(1))
+    @assert all(r .> 0)
+
+    return maximum(d ./ r) - 1.0
+end
 
 function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     # Calculate the signed distances from x to edge lines.
