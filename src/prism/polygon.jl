@@ -1,5 +1,5 @@
 export Polygon, PolygonalPrism
-export regpoly, isosceles
+export Isosceles  # constructor-like methods (a.k.a factory methods)
 
 #= Polygon (for a base shape) =#
 
@@ -41,13 +41,33 @@ end
 
 Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,2); Polygon(SMatrix{2,K}(v), data))
 
+# Regular polygon
+function Polygon{K}(c::SVector{2,<:Real},
+                    r::Real,  # distance between center and each vertex
+                    θ::Real=π/2,  # angle from +x-direction towards first vertex; π/2 corresponds to +y-direction
+                    data=nothing) where {K}
+    ∆θ = 2π / K
+
+    θs = θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
+    v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
+
+    return Polygon(v, data)
+end
+
+Polygon{K}(c::AbstractVector{<:Real},  # [x, y]: center of regular polygon
+           r::Real,  # radius: distance from center to vertices
+           θ::Real=π/2,  # angle of first vertex
+           data=nothing) where {K} =
+   Polygon{K}(SVector{2}(c), r, θ, data)
+
+
 Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n && s1.data==s2.data  # assume sorted v
 Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n && s1.data==s2.data  # assume sorted v
 Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Polygon, h))))
 
 function level(x::SVector{2,<:Real}, s::Polygon)
     c = mean(s.v, dims=Val(2))  # center of mass
-    
+
     d = sum(s.n .* (x .- c), dims=Val(1))
     r = sum(s.n .* (s.v .- c), dims=Val(1))
     @assert all(r .> 0)
@@ -120,27 +140,6 @@ function bounds(s::Polygon)
 end
 
 #= Factory methods =#
-# Regular polygon
-function regpoly(::Val{K},  # number of vertices
-                 r::Real,  # distance between center and each vertex
-                 θ::Real=π/2,  # angle from +x-direction towards first vertex; π/2 corresponds to +y-direction
-                 c::SVector{2,<:Real}=SVector(0.0,0.0),  # center location
-                 data=nothing) where {K}
-    ∆θ = 2π / K
-
-    θs = θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
-    v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
-
-    return Polygon(v, data)
-end
-
-regpoly(k::Integer,  # number of vertices
-        r::Real,  # radius: distance from center to vertices
-        θ::Real=π/2,  # angle of first vertex
-        c::AbstractVector{<:Real}=[0.0,0.0],  # [x, y]: center of regular polygon
-        data=nothing) =
-   regpoly(Val(k), r, θ, SVector{2}(c), data)
-
 # Isosceles triangle
 function Isosceles(base::NTuple{2,SVector{2,<:Real}},
                    h::Real,

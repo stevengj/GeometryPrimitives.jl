@@ -1,6 +1,6 @@
 @testset "triangle" begin
     r = 2  # radius
-    b = regpoly(3, r)  # regular triangle inscribed in circle of radius r (triangel side = √3r/2)
+    b = Polygon{3}([0,0], r)  # regular triangle inscribed in circle of radius r (triangel side = √3r/2)
 
     va = [0,r]  # apex
     vl = [-√3r/2,-r/2]  # left vertex
@@ -30,7 +30,7 @@
     @test bounds(b) ≈ (vl, [vr[1],va[2]])
     @test checkbounds(b)
 
-    @test (∆ = rand(2); translate(b,∆) ≈ regpoly(3,r,π/2,∆))
+    @test (∆ = rand(2); translate(b,∆) ≈ Polygon{3}(∆,r,π/2))
 
     @test b ≈ Polygon([va vl vr])
     @test Polygon([va vl vr]) == Polygon([va vr vl]) == Polygon([vl va vr]) == Polygon([vl vr va]) == Polygon([vr va vl]) == Polygon([vr vl va])
@@ -41,7 +41,7 @@ end  # @testset "triangle"
 @testset "triangular prism" begin
     r = 1
     h2 = 1.1
-    c = Prism([0,0,0], regpoly(3,r), 2h2)
+    c = Prism([0,0,0], Polygon{3}([0,0],r), 2h2)
 
     va = [0,r]  # apex
     vl = [-√3r/2,-r/2]  # left vertex
@@ -73,7 +73,7 @@ end  # @testset "triangle"
     @test bounds(c) ≈ ([vl;-h2],[vr[1],va[2],h2])
     @test checkbounds(c)
 
-    @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, regpoly(3,r), 2h2))
+    @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, Polygon{3}([0,0],r), 2h2))
 end  # @testset "triangular prism"
 
 
@@ -85,7 +85,7 @@ end  # @testset "triangular prism"
 
     r = 1
     h2 = 1.1
-    c = Prism([0,0,0], regpoly(3,r), 2h2, ax)
+    c = Prism([0,0,0], Polygon{3}([0,0],r), 2h2, ax)
 
     va = [0,r]  # apex
     vl = [-√3r/2,-r/2]  # left vertex
@@ -117,5 +117,5 @@ end  # @testset "triangular prism"
     @test (vtot = [[vl;h2] [vl;-h2] [vr;h2] [vr;-h2] [va;h2] [va;-h2]]; bounds(c) ≈ (minimum(ax*vtot, dims=2)[:,1], maximum(ax*vtot, dims=2)[:,1]))
     @test checkbounds(c)
 
-    @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, regpoly(3,r), 2h2, ax))
+    @test (∆ = rand(3); translate(c,∆) ≈ Prism([0,0,0].+∆, Polygon{3}([0,0],r), 2h2, ax))
 end  # @testset "triangular prism, rotated"
