@@ -1,6 +1,6 @@
 export SectoralPrism
 
-const SectoralPrism = Prism{Sector{Nothing}}
+const SectoralPrism = Prism{Sector}
 
 # Below, if we called SectoralPrism(c, ...) in the function body, it would call the inner
 # constructor Prism{Sector{Nothing}}(c, ...) because SectoralPrism = Prism{Sector{Nothing}},
@@ -11,18 +11,17 @@ SectoralPrism(c::SVector{3,<:Real},
               ϕ::Real,
               ∆ϕ::Real,
               h::Real=Inf,
-              a::SVector{3,<:Real}=SVector(0.0,0.0,1.0),
-              data=nothing) where {K} =
-    (â = normalize(a); Prism(c, Sector(SVector(0.0,0.0),r,ϕ,∆ϕ), h, [orthoaxes(â)... â], data))
+              a::SVector{3,<:Real}=SVector(0.0,0.0,1.0)
+              ) where {K} =
+    (â = normalize(a); Prism(c, Sector(SVector(0.0,0.0),r,ϕ,∆ϕ), h, [orthoaxes(â)... â]))
 
 SectoralPrism(c::AbstractVector{<:Real},  # center of prism
               r::Real,  # radius of sectoral base
               ϕ::Real,  # start angle of sectoral base: 0 ≤ ϕₛ < 2π  (2π excluded)
               ∆ϕ::Real,  # end angle sectoral base: 0 ≤ ϕₑ-ϕₛ ≤ 2π
               h::Real=Inf,  # height of prism
-              a::AbstractVector{<:Real}=[0.0,0.0,1.0],  # axis direction of prism
-              data=nothing) =
-    SectoralPrism(SVector{3}(c), r, ϕ, ∆ϕ, h, SVector{3}(a), data)
+              a::AbstractVector{<:Real}=[0.0,0.0,1.0]) =  # axis direction of prism
+    SectoralPrism(SVector{3}(c), r, ϕ, ∆ϕ, h, SVector{3}(a))
 
 function bounds_ctrcut(s::SectoralPrism)
     ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal

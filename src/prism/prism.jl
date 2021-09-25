@@ -32,28 +32,27 @@
 
 export Prism
 
-mutable struct Prism{B<:Shape{2},D} <: Shape{3,9,D}
+mutable struct Prism{B<:Shape{2}} <: Shape{3,9}
     c::SVector{3,Float64}  # prism center
     b::B  # base shape described in prism coordinates (i.e, when translating prism, do not need to translate b)
     h2::Float64  # height * 0.5
     p::SMatrix{3,3,Float64,9}  # projection matrix to prism coordinates; must be orthonormal (see surfpt_nearby)
-    data::D  # auxiliary data
-    Prism{B,D}(c,b,h2,p,data) where {B,D} = new(c,b,h2,p,data)  # suppress default outer constructor
+    Prism{B}(c,b,h2,p) where {B} = new(c,b,h2,p)  # suppress default outer constructor
 end
 
 Prism(c::SVector{3,<:Real},
       b::B,
       h::Real=Inf,
-      axes::SMatrix{3,3,<:Real}=SMatrix{3,3,Float64}(I),  # columns are axes vectors: first two columns span prism base, and last column is prism axis
-      data::D=nothing) where {B<:Shape{2},D} =
-    Prism{B,D}(c, b, 0.5h, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
+      axes::SMatrix{3,3,<:Real}=SMatrix{3,3,Float64}(I)  # columns are axes vectors: first two columns span prism base, and last column is prism axis
+      ) where {B<:Shape{2}} =
+    Prism{B}(c, b, 0.5h, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))))
 
-Prism(c::AbstractVector{<:Real}, b::Shape{2}, h::Real=Inf, axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c)), data=nothing) =
-    Prism(SVector{3}(c), b, h, SMatrix{3,3}(axes), data)
+Prism(c::AbstractVector{<:Real}, b::Shape{2}, h::Real=Inf, axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c))) =
+    Prism(SVector{3}(c), b, h, SMatrix{3,3}(axes))
 
-Base.:(==)(s1::Prism, s2::Prism) = s1.c==s2.c && s1.b==s2.b && s1.h2==s2.h2 && s1.p==s2.p && s1.data==s2.data
-Base.isapprox(s1::Prism, s2::Prism) = s1.c≈s2.c && s1.b≈s2.b && s1.h2≈s2.h2 && s1.p≈s2.p && s1.data==s2.data
-Base.hash(s::Prism, h::UInt) = hash(s.c, hash(s.b, hash(s.h2, hash(s.p, hash(s.data, hash(:Prism, h))))))
+Base.:(==)(s1::Prism, s2::Prism) = s1.c==s2.c && s1.b==s2.b && s1.h2==s2.h2 && s1.p==s2.p
+Base.isapprox(s1::Prism, s2::Prism) = s1.c≈s2.c && s1.b≈s2.b && s1.h2≈s2.h2 && s1.p≈s2.p
+Base.hash(s::Prism, h::UInt) = hash(s.c, hash(s.b, hash(s.h2, hash(s.p, hash(:Prism, h)))))
 
 function level(x::SVector{3,<:Real}, s::Prism)
     y = s.p * (x - s.c)  # coordinates after projection
@@ -102,7 +101,7 @@ end
 
 # Below, the base shape is not translated because the base geometry is described with
 # respect to the prism coordinates.  See the implementation of Base.in above.
-translate(s::Prism{B,D}, ∆::SVector{3,<:Real}) where {B<:Shape{2},D} = Prism{B,D}(s.c+∆, s.b, s.h2, s.p, s.data)
+translate(s::Prism{B}, ∆::SVector{3,<:Real}) where {B<:Shape{2}} = Prism{B}(s.c+∆, s.b, s.h2, s.p)
 
 function bounds(s::Prism)
     ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal

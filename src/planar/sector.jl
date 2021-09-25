@@ -2,35 +2,26 @@ export Sector
 
 #= Sector (for a base shape) =#
 
-mutable struct Sector{D} <: Shape{2,4,D}  # M = 2K
+mutable struct Sector <: Shape{2,4}  # M = 2K
     c::SVector{2,Float64}  # center of circle
     r::Float64  # radius of circle
     ϕ₀::Float64  # center angle bisecting sector: -π ≤ ϕ₀ < π  (π excluded)
     ∆ϕ2::Float64  # "radius" in angle dimension: 0 ≤ ∆ϕ2 ≤ π (sector spans from ϕ₀ - ∆ϕ2 to ϕ₀ + ∆ϕ2)
-    data::D  # auxiliary data
-    Sector{D}(c,r,ϕ₀,∆ϕ,data) where {D} = new(c,r,ϕ₀,∆ϕ,data)  # suppress default outer constructor
+
+    function Sector(c::AbstractVector{<:Real}, r::Real, ϕ::Real, ∆ϕ::Real)
+        r≥0 || throw(ArgumentError("r = $r must be nonnegative."))
+        -2π≤∆ϕ≤2π  || throw(ArgumentError("∆ϕ = $∆ϕ must be between -2π and 2π, inclusive."))
+
+        ϕ₀ = rem(ϕ + ∆ϕ/2, 2π, RoundNearest)  # put ϕ₀ in [-π, π)
+        ∆ϕ2 = abs(∆ϕ/2)
+
+        return new(c, r, ϕ₀, ∆ϕ2)
+    end
 end
 
-function Sector(c::SVector{2,<:Real}, r::Real, ϕ::Real, ∆ϕ::Real, data::D=nothing) where {D}
-    r≥0 || throw(ArgumentError("r = $r must be nonnegative."))
-    -2π≤∆ϕ≤2π  || throw(ArgumentError("∆ϕ = $∆ϕ must be between -2π and 2π, inclusive."))
-
-    ϕ₀ = rem(ϕ + ∆ϕ/2, 2π, RoundNearest)  # put ϕ₀ in [-π, π)
-    ∆ϕ2 = abs(∆ϕ/2)
-
-    return Sector{D}(c, r, ϕ₀, ∆ϕ2, data)
-end
-
-Sector(c::AbstractVector{<:Real},  # center of circle
-       r::Real,  # radius of circle
-       ϕ::Real,  # start angle
-       ∆ϕ::Real,  # width in angle dimension; can be negative (-2π ≤ ∆ϕ ≤ 2π)
-       data=nothing) =
-    Sector(SVector{2}(c), r, ϕ, ∆ϕ, data)
-
-Base.:(==)(s1::Sector, s2::Sector) = s1.c==s2.c && s1.r==s2.r && s1.ϕ₀==s2.ϕ₀ && s1.∆ϕ2==s2.∆ϕ2 && s1.data==s2.data
-Base.isapprox(s1::Sector, s2::Sector) = s1.c≈s2.c && s1.r≈s2.r && s1.ϕ₀≈s2.ϕ₀ && s1.∆ϕ2≈s2.∆ϕ2 && s1.data==s2.data
-Base.hash(s::Sector, h::UInt) = hash(s.c, hash(s.r, hash(s.ϕ₀, hash(s.∆ϕ2, hash(s.data, hash(:Sector, h))))))
+Base.:(==)(s1::Sector, s2::Sector) = s1.c==s2.c && s1.r==s2.r && s1.ϕ₀==s2.ϕ₀ && s1.∆ϕ2==s2.∆ϕ2
+Base.isapprox(s1::Sector, s2::Sector) = s1.c≈s2.c && s1.r≈s2.r && s1.ϕ₀≈s2.ϕ₀ && s1.∆ϕ2≈s2.∆ϕ2
+Base.hash(s::Sector, h::UInt) = hash(s.c, hash(s.r, hash(s.ϕ₀, hash(s.∆ϕ2, hash(:Sector, h)))))
 
 distangle(ϕ::Real, ϕ₀:: Real) = rem(ϕ-ϕ₀, 2π, RoundNearest)  # ϕ measured from ϕ₀; result within [-π, π)
 
@@ -95,7 +86,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Sector)
     return surf+s.c, nout
 end
 
-translate(s::Sector{D}, ∆::SVector{2,<:Real}) where {D} = Sector{D}(s.c+∆, s.r, s.ϕ₀, s.∆ϕ2, s.data)
+translate(s::Sector, ∆::SVector{2,<:Real}) = (s2 = deepcopy(s); s2.c += ∆; s2)
 
 function bounds(s::Sector)
     # Find the minimum and maximum coordinates among the center and two ends of the arc.

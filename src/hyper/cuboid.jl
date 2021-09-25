@@ -12,33 +12,30 @@ export Cuboid
 # each row of Cuboid.p is orthogononal to two cuboid axes, and therefore normal to the face
 # spanned by the two cuboid axes.  (Note that the rows of Cuboid.p are not unit normals to
 # the faces, becuase they are not unit vectors.)
-mutable struct Cuboid{N,N²,D} <: Shape{N,N²,D}
+mutable struct Cuboid{N,N²} <: Shape{N,N²}
     c::SVector{N,Float64}  # center of cuboid
     r::SVector{N,Float64}  # "radii" (semi-axes) in axis directions
     p::SMatrix{N,N,Float64,N²}  # projection matrix to cuboid coordinates
-    data::D  # auxiliary data
-    Cuboid{N,N²,D}(c,r,p,data) where {N,N²,D} = new(c,r,p,data)  # suppress default outer constructor
+    Cuboid{N,N²}(c,r,p) where {N,N²} = new(c,r,p)  # suppress default outer constructor
 end
 
 Cuboid(c::SVector{N,<:Real},
        s::SVector{N,<:Real},
-       axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I),
-       data::D=nothing) where {N,D} =
-    Cuboid{N,N*N,D}(c, 0.5s, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))), data)
+       axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I)
+       ) where {N} =
+    Cuboid{N,N*N}(c, 0.5s, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))))
 
 Cuboid(c::AbstractVector{<:Real},  # center of cuboid
        s::AbstractVector{<:Real},  # size of cuboid in axis directions
-       axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c)),  # columns are axes vectors (each being parallel to two sets of faces in 3D)
-       data=nothing) =
-    (N = length(c); Cuboid(SVector{N}(c), SVector{N}(s), SMatrix{N,N}(axes), data))
+       axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c))) =  # columns are axes vectors (each being parallel to two sets of faces in 3D)
+    (N = length(c); Cuboid(SVector{N}(c), SVector{N}(s), SMatrix{N,N}(axes)))
 
-Cuboid(d::NTuple{2,AbstractVector{<:Real}},  # end points of diagonal
-       data=nothing) =
+Cuboid(d::NTuple{2,AbstractVector{<:Real}}) =  # end points of diagonal
     Cuboid((d[1]+d[2])/2, abs.(d[2]-d[1]))
 
-Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p && b1.data==b2.data
-Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p && b1.data==b2.data
-Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(b.data, hash(:Cuboid, h)))))
+Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p
+Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p
+Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(:Cuboid, h))))
 
 function level(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     d = b.p * (x - b.c)
@@ -90,7 +87,7 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     return x+∆x, nout
 end
 
-translate(b::Cuboid{N,N²,D}, ∆::SVector{N,<:Real}) where {N,N²,D} = Cuboid{N,N²,D}(b.c+∆, b.r, b.p, b.data)
+translate(b::Cuboid{N,N²}, ∆::SVector{N,<:Real}) where {N,N²} = Cuboid{N,N²}(b.c+∆, b.r, b.p)
 
 signmatrix(b::Cuboid{1}) = SMatrix{1,1}(1)
 signmatrix(b::Cuboid{2}) = SMatrix{2,2}(1,1, -1,1)

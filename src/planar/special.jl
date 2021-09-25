@@ -8,8 +8,7 @@ export Isosceles, Trapezoid  # constructor-like methods (a.k.a factory methods)
 
 # Isosceles triangle
 function Isosceles(base::NTuple{2,SVector{2,<:Real}},  # (end point 1, end point 2): two end points of base
-                   h::Real,  # height drawn normal to base; direction is π/2 from base[2]-base[1]
-                   data=nothing)
+                   h::Real)  # height drawn normal to base; direction is π/2 from base[2]-base[1]
     m = (base[1] + base[2]) / 2  # midpoint of base
     bvec = normalize(base[2] - base[1])  # unit direction of base
     hvec = @SVector [-bvec[2], bvec[1]]  # unit direction of height
@@ -17,16 +16,15 @@ function Isosceles(base::NTuple{2,SVector{2,<:Real}},  # (end point 1, end point
 
     v = [base[1] base[2] p]  # vertices
 
-    return Polygon(v, data)
+    return Polygon(v)
 end
 
-Isosceles(base::NTuple{2,AbstractVector{<:Real}}, h::Real, data=nothing) = Isosceles(SVector{2}.(base), h, data)
+Isosceles(base::NTuple{2,AbstractVector{<:Real}}, h::Real) = Isosceles(SVector{2}.(base), h)
 
 # Trapezoid
 function Trapezoid(base::NTuple{2,SVector{2,<:Real}},  # (end point 1, end point 2): two end points of base
                    h::Real,  # height drawn normal to base; direction is π/2 from base[2]-base[1]
-                   θ::NTuple{2,Real},  # (base angle 1, base angle 2)
-                   data=nothing)
+                   θ::NTuple{2,Real})  # (base angle 1, base angle 2)
     bvec = normalize(base[2] - base[1])  # unit direction of base
     hvec = @SVector [-bvec[2], bvec[1]]  # unit direction of height
 
@@ -35,11 +33,11 @@ function Trapezoid(base::NTuple{2,SVector{2,<:Real}},  # (end point 1, end point
 
     v = [base[1] base[2] t2 t1]
 
-    return Polygon(v, data)
+    return Polygon(v)
 end
 
-Trapezoid(base::NTuple{2,AbstractVector{<:Real}}, h::Real, θ::NTuple{2,Real}, data=nothing) =
-    Trapezoid(SVector{2}.(base), h, θ, data)
+Trapezoid(base::NTuple{2,AbstractVector{<:Real}}, h::Real, θ::NTuple{2,Real}) =
+    Trapezoid(SVector{2}.(base), h, θ)
 
 # Isosceles trapezoid
-Trapezoid(base::NTuple{2,AbstractVector{<:Real}}, h::Real, θ::Real, data=nothing) = Trapezoid(base, h, (θ,θ), data)
+Trapezoid(base::NTuple{2,AbstractVector{<:Real}}, h::Real, θ::Real) = Trapezoid(base, h, (θ,θ))

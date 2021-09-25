@@ -5,14 +5,13 @@ export Polygon
 # Assume the followings for the polygon represented by Polygon:
 # - The polygon is convex.
 # - The vertices are listed in the counter-clockwise order around the origin.
-mutable struct Polygon{K,K2,D} <: Shape{2,4,D}  # K2 = 2K
+mutable struct Polygon{K,K2} <: Shape{2,4}  # K2 = 2K
     v::SMatrix{2,K,Float64,K2}  # vertices
     n::SMatrix{2,K,Float64,K2}  # direction normals to edges
-    data::D  # auxiliary data
-    Polygon{K,K2,D}(v,n,data) where {K,K2,D} = new(v,n,data)  # suppress default outer constructor
+    Polygon{K,K2}(v,n) where {K,K2} = new(v,n)  # suppress default outer constructor
 end
 
-function Polygon(v::SMatrix{2,K,<:Real}, data::D=nothing) where {K,D}
+function Polygon(v::SMatrix{2,K,<:Real}) where {K}
     # Sort the vertices in the counter-clockwise direction
     w = v .- mean(v, dims=Val(2))  # v in center-of-mass coordinates
     ϕ = mod.(atan.(w[2,:], w[1,:]), 2π)  # SVector{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
@@ -35,34 +34,34 @@ function Polygon(v::SMatrix{2,K,<:Real}, data::D=nothing) where {K,D}
     n = [∆v[2,:] -∆v[1,:]]'  # SMatrix{2,K}; outward normal directions to edges
     n = n ./ hypot.(n[1,:], n[2,:])'  # normalize
 
-    return Polygon{K,2K,D}(v,n,data)
+    return Polygon{K,2K}(v,n)
 end
 
-Polygon(v::AbstractMatrix{<:Real}, data=nothing) = (K = size(v,2); Polygon(SMatrix{2,K}(v), data))
+Polygon(v::AbstractMatrix{<:Real}) = (K = size(v,2); Polygon(SMatrix{2,K}(v)))
 
 # Regular polygon
 function Polygon{K}(c::SVector{2,<:Real},
                     r::Real,  # distance between center and each vertex
-                    θ::Real=0.0,  # angle from +y-direction towards first vertex
-                    data=nothing) where {K}
+                    θ::Real=0.0  # angle from +y-direction towards first vertex
+                    ) where {K}
     ∆θ = 2π / K
 
     θs = π/2 + θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
     v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
 
-    return Polygon(v, data)
+    return Polygon(v)
 end
 
 Polygon{K}(c::AbstractVector{<:Real},  # [x, y]: center of regular polygon
            r::Real,  # radius: distance from center to vertices
-           θ::Real=π/2,  # angle of first vertex
-           data=nothing) where {K} =
-   Polygon{K}(SVector{2}(c), r, θ, data)
+           θ::Real=0.0  # angle of first vertex
+           ) where {K} =
+   Polygon{K}(SVector{2}(c), r, θ)
 
 
-Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n && s1.data==s2.data  # assume sorted v
-Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n && s1.data==s2.data  # assume sorted v
-Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(s.data, hash(:Polygon, h))))
+Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n  # assume sorted v
+Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n  # assume sorted v
+Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(:Polygon, h)))
 
 function level(x::SVector{2,<:Real}, s::Polygon)
     c = mean(s.v, dims=Val(2))  # center of mass
@@ -129,7 +128,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     return surf, nout
 end
 
-translate(s::Polygon{K,K2,D}, ∆::SVector{2,<:Real}) where {K,K2,D} = Polygon{K,K2,D}(s.v .+ ∆, s.n, s.data)
+translate(s::Polygon{K,K2}, ∆::SVector{2,<:Real}) where {K,K2} = Polygon{K,K2}(s.v .+ ∆, s.n)
 
 function bounds(s::Polygon)
     l = minimum(s.v, dims=Val(2))[:,1]
