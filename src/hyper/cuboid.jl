@@ -87,8 +87,6 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     return x+∆x, nout
 end
 
-translate(b::Cuboid{N,N²}, ∆::SVector{N,<:Real}) where {N,N²} = Cuboid{N,N²}(b.c+∆, b.r, b.p)
-
 signmatrix(b::Cuboid{1}) = SMatrix{1,1}(1)
 signmatrix(b::Cuboid{2}) = SMatrix{2,2}(1,1, -1,1)
 signmatrix(b::Cuboid{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)

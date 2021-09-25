@@ -99,10 +99,6 @@ function surfpt_nearby(x::SVector{3,<:Real}, s::Prism)
     return ax*(surf+s.c), ax*nout
 end
 
-# Below, the base shape is not translated because the base geometry is described with
-# respect to the prism coordinates.  See the implementation of Base.in above.
-translate(s::Prism{B}, ∆::SVector{3,<:Real}) where {B<:Shape{2}} = Prism{B}(s.c+∆, s.b, s.h2, s.p)
-
 function bounds(s::Prism)
     ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
     a = ax[:,3]  # SVector{3}

@@ -20,7 +20,8 @@ level(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(SVector{N}(x), o
 Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(x,o) ≤ 0
 surfpt_nearby(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
 normal(x::AbstractVector{<:Real}, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
-translate(o::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(o, SVector{N}(∆))
+translate(s::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(s, SVector{N}(∆))
+translate(s::Shape{N}, ∆::SVector{N,<:Real}) where {N} = (s2 = deepcopy(s); s2.c += ∆; s2)  # default implementation
 
 function orthoaxes(n::SVector{3,<:Real})
     u_temp = abs(n[3]) < abs(n[1]) ? SVector(0,0,1) : SVector(1,0,0)

@@ -21,6 +21,4 @@ function surfpt_nearby(x::SVector{N,<:Real}, s::Ball{N}) where {N}
     return s.c+s.r*nout, nout
 end
 
-translate(s::Ball{N,N²}, ∆::SVector{N,<:Real}) where {N,N²} = Ball{N,N²}(s.c+∆, s.r)
-
 bounds(s::Ball) = (s.c.-s.r, s.c.+s.r)

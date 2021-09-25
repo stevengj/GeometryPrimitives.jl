@@ -86,8 +86,6 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Sector)
     return surf+s.c, nout
 end
 
-translate(s::Sector, ∆::SVector{2,<:Real}) = (s2 = deepcopy(s); s2.c += ∆; s2)
-
 function bounds(s::Sector)
     # Find the minimum and maximum coordinates among the center and two ends of the arc.
     ϕ = SVector(s.ϕ₀ - s.∆ϕ2, s.ϕ₀ + s.∆ϕ2)  # [start angle, end angle]

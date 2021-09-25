@@ -58,8 +58,6 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Ellipsoid{N}) where {N}
     return x₀, nout
 end
 
-translate(b::Ellipsoid{N,N²}, ∆::SVector{N,<:Real}) where {N,N²} = Ellipsoid{N,N²}(b.c+∆, b.ri2, b.p)
-
 function boundpts(b::Ellipsoid{N}) where {N}
     # Return the points tangential to the bounding box.
     # For N = 3, it returns three points at which the direction normals are +x, +y, +z

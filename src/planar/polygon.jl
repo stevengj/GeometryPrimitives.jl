@@ -128,7 +128,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     return surf, nout
 end
 
-translate(s::Polygon{K,K2}, ∆::SVector{2,<:Real}) where {K,K2} = Polygon{K,K2}(s.v .+ ∆, s.n)
+translate(s::Polygon, ∆::SVector{2,<:Real}) = (s2 = deepcopy(s); s2.v = s2.v .+ ∆; s2)
 
 function bounds(s::Polygon)
     l = minimum(s.v, dims=Val(2))[:,1]
