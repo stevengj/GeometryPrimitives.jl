@@ -35,4 +35,15 @@
     @test b ≈ Polygon([va vl vr])
     @test Polygon([va vl vr]) == Polygon([va vr vl]) == Polygon([vl va vr]) == Polygon([vl vr va]) == Polygon([vr va vl]) == Polygon([vr vl va])
     @test b ≈ Isosceles((vl,vr), 1.5r)
+    @test b ≈ Isosceles([0,-r/2], √3r, 1.5r)
 end  # @testset "triangle"
+
+@testset "trapezoid" begin
+    b2 = 1
+    h = 1
+    ϕ = π/3
+    t = Trapezoid(([-b2,0],[b2,0]), h, ϕ)
+
+    @test t ≈ Trapezoid(([-b2,0],[b2,0]), h, (ϕ,ϕ))
+    @test t ≈ Trapezoid([0,0], 2b2, h, ϕ)
+end  # @test "trapezoid"
