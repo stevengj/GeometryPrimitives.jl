@@ -1,6 +1,7 @@
 module GeometryPrimitives
 using StaticArrays, LinearAlgebra
 using Statistics: mean
+using Makie
 
 export Shape, Shape1, Shape2, Shape3
 export level, surfpt_nearby, normal, bounds, translate
