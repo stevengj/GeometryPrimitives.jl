@@ -1,14 +1,28 @@
-const ϵrel = Base.rtoldefault(Float64)  # machine epsilon
+const EPS_REL = Base.rtoldefault(Float64)  # machine epsilon
 
 # Define drawshape() and drawshape!() functions.
+# hres and vres are the number of sampling points in the corresponding Cartesion derctions.
+# They should be at least 2 because range(start, end, length) with start≠end requires length
+# ≥ 2.  The default values of vres and hres are intentionally invalid.
 @recipe(DrawShape) do scene
-    Attributes(vres=100, hres=100)
+    Attributes(res=101, vres=1, hres=1)
 end
 
 # Implement drawshape!() for 2D shapes.
 function Makie.plot!(ds::DrawShape{<:Tuple{Shape{2}}})
+    res₀ = ds.res.val  # fields found by examining typeof(ds) and fieldnames(typeof(ds)), etc
+    hres = ds.hres.val
+    vres = ds.vres.val
+
+    # If hres and vres are set to valid values, use them; otherwise use res₀.
+    hres≤1 && (hres = res₀)
+    vres≤1 && (vres = res₀)
+
+    hres>1 || @error "hres = $hres should be at least 2."
+    vres>1 || @error "vres = $vres should be at least 2."
+
     shp = ds[1]
-    res = (ds.vres.val, ds.hres.val)  # found by examining typeof(ds) and fieldnames(typeof(ds)), etc
+    res = (hres, vres)
 
     # Makie.convert_arguments() defined below handles this new signature.
     contour!(ds, shp, res, levels=SVector(0.0); ds.attributes...)
@@ -18,9 +32,20 @@ end
 
 # Implement drawshape!() for 3D shapes.
 function Makie.plot!(ds::DrawShape{<:Tuple{Shape{3},Tuple{Symbol,Real}}})
+    res₀ = ds.res.val  # fields found by examining typeof(ds) and fieldnames(typeof(ds)), etc
+    hres = ds.hres.val
+    vres = ds.vres.val
+
+    # If hres and vres are set to valid values, use them; otherwise use res₀.
+    hres≤1 && (hres = res₀)
+    vres≥1 && (vres = res₀)
+
+    hres>1 || @error "hres = $hres should at least 2."
+    vres>1 || @error "vres = $vres should at least 2."
+
     shp = ds[1]
     cs = ds[2]
-    res = (ds.vres.val, ds.hres.val)  # found by examining typeof(ds) and fieldnames(typeof(ds)), etc
+    res = (hres, vres)
 
     # Makie.convert_arguments() defined below handles this new signature.
     contour!(ds, shp, cs, res, levels=SVector(0.0); ds.attributes...)
@@ -33,8 +58,9 @@ function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple{Integ
     lower, upper = bounds(shp)
     ∆ = upper - lower
 
-    nw = 1; xs = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw]+1)
-    nw = 2; ys = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw]+2)
+    ϵrel = EPS_REL
+    nw = 1; xs = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw])
+    nw = 2; ys = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw])
 
     lvs = [level(@SVector([x,y]), shp) for x = xs, y = ys]
 
@@ -59,8 +85,9 @@ function Makie.convert_arguments(P::SurfaceLike, shp::Shape{3},
     lower, upper = bounds(shp)
     ∆ = upper - lower
 
-    us = range(lower[nu] - ϵrel*∆[nu], upper[nu] + ϵrel*∆[nu], length=res[1]+1)
-    vs = range(lower[nv] - ϵrel*∆[nv], upper[nv] + ϵrel*∆[nv], length=res[2]+1)
+    ϵrel = EPS_REL
+    us = range(lower[nu] - ϵrel*∆[nu], upper[nu] + ϵrel*∆[nu], length=res[1])
+    vs = range(lower[nv] - ϵrel*∆[nv], upper[nv] + ϵrel*∆[nv], length=res[2])
 
     lvs = [level(u*û + v*v̂ + cept*ŵ, shp) for u = us, v = vs]
 
