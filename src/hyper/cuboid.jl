@@ -40,7 +40,7 @@ Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(:Cuboid, h)))
 function level(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     d = b.p * (x - b.c)
 
-    return maximum(abs.(d) ./ b.r) - 1.0
+    return 1.0 - maximum(abs.(d) ./ b.r)
 end
 
 function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}

@@ -18,7 +18,7 @@ Base.ndims(o::Shape{N}) where {N} = N
 # https://discourse.julialang.org/t/extending-base-in-type-stably/5341/12
 # https://github.com/JuliaLang/julia/issues/23210
 level(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(SVector{N}(x), o)
-Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(x,o) ≤ 0
+Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(x,o) ≥ 0
 surfpt_nearby(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
 normal(x::AbstractVector{<:Real}, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
 translate(s::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(s, SVector{N}(∆))

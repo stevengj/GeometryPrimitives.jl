@@ -24,7 +24,7 @@ Base.:(==)(b1::Ellipsoid, b2::Ellipsoid) = b1.c==b2.c && b1.ri2==b2.ri2 && b1.p=
 Base.isapprox(b1::Ellipsoid, b2::Ellipsoid) = b1.c≈b2.c && b1.ri2≈b2.ri2 && b1.p≈b2.p
 Base.hash(b::Ellipsoid, h::UInt) = hash(b.c, hash(b.ri2, hash(b.p, hash(:Ellipsoid, h))))
 
-level(x::SVector{N,<:Real}, b::Ellipsoid{N}) where {N} = √dot((b.p * (x - b.c)).^2, b.ri2) - 1.0
+level(x::SVector{N,<:Real}, b::Ellipsoid{N}) where {N} = 1.0 - √dot((b.p * (x - b.c)).^2, b.ri2)
 
 function surfpt_nearby(x::SVector{N,<:Real}, b::Ellipsoid{N}) where {N}
     if x == b.c

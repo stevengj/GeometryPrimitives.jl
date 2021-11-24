@@ -70,7 +70,7 @@ function level(x::SVector{2,<:Real}, s::Polygon)
     r = sum(s.n .* (s.v .- c), dims=Val(1))
     @assert all(r .> 0)
 
-    return maximum(d ./ r) - 1.0
+    return 1.0 - maximum(d ./ r)
 end
 
 function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}

@@ -30,7 +30,7 @@ function level(x::SVector{2,<:Real}, s::Sector)
     ld = norm(d)
     ϕ = ld==0 ? s.ϕ₀ : atan(d[2], d[1])  # angle to x with respect to c
 
-    return max(ld/s.r, abs(distangle(ϕ, s.ϕ₀)) / s.∆ϕ2) - 1.0
+    return 1.0 - max(ld/s.r, abs(distangle(ϕ, s.ϕ₀)) / s.∆ϕ2)
 end
 
 function surfpt_nearby(x::SVector{2,<:Real}, s::Sector)

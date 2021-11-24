@@ -59,7 +59,7 @@ function level(x::SVector{3,<:Real}, s::Prism)
     ya = y[3]  # scalar: coordinate in axis dimension
     yb = y[SVector(1,2)]  # SVector{2}: coordinate in base dimensions
 
-    return max(abs(ya)/s.h2 - 1.0, level(yb,s.b))
+    return min(1.0 - abs(ya)/s.h2, level(yb,s.b))
 end
 
 function surfpt_nearby(x::SVector{3,<:Real}, s::Prism)
