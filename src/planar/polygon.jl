@@ -6,64 +6,64 @@ export Polygon
 # - The polygon is convex.
 # - The vertices are listed in the counter-clockwise order around the origin.
 mutable struct Polygon{K,K2} <: Shape{2,4}  # K2 = 2K
-    v::SMatrix{2,K,Float64,K2}  # vertices
-    n::SMatrix{2,K,Float64,K2}  # direction normals to edges
+    v::SMat{2,K,Float,K2}  # vertices
+    n::SMat{2,K,Float,K2}  # direction normals to edges
     Polygon{K,K2}(v,n) where {K,K2} = new(v,n)  # suppress default outer constructor
 end
 
-function Polygon(v::SMatrix{2,K,<:Real}) where {K}
+function Polygon(v::SMat{2,K,<:Real}) where {K}
     # Sort the vertices in the counter-clockwise direction
     w = v .- mean(v, dims=Val(2))  # v in center-of-mass coordinates
-    ϕ = mod.(atan.(w[2,:], w[1,:]), 2π)  # SVector{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
+    ϕ = mod.(atan.(w[2,:], w[1,:]), 2π)  # SVec{K}: angle of vertices between 0 and 2π; `%` does not work for negative angle
     if !issorted(ϕ)
         # Do this only when ϕ is not sorted, because the following uses allocations.
-        ind = MVector{K}(sortperm(ϕ))  # sortperm(::SVector) currently returns Vector, not MVector
-        v = v[:,ind]  # SVector{K}: sorted v
+        ind = MVec{K}(sortperm(ϕ))  # sortperm(::SVec) currently returns Vector, not MVector
+        v = v[:,ind]  # SVec{K}: sorted v
     end
 
     # Calculate the increases in angle between neighboring edges.
-    ∆v = hcat(diff(v, dims=Val(2)), SMatrix{2,1}(v[:,1]-v[:,end]))  # SMatrix{2,K}: edge directions
-    ∆z = ∆v[1,:] + im * ∆v[2,:]  # SVector{K}: edge directions as complex numbers
+    ∆v = hcat(diff(v, dims=Val(2)), SMat{2,1}(v[:,1]-v[:,end]))  # SMat{2,K}: edge directions
+    ∆z = ∆v[1,:] + im * ∆v[2,:]  # SVec{K}: edge directions as complex numbers
     icurr = ntuple(identity, Val(K-1))
     inext = ntuple(x->x+1, Val(K-1))
-    ∆ϕ = angle.(∆z[SVector(inext)] ./ ∆z[SVector(icurr)])  # angle returns value between -π and π
+    ∆ϕ = angle.(∆z[SVec(inext)] ./ ∆z[SVec(icurr)])  # angle returns value between -π and π
 
     # Check all the angle increases are positive.  If they aren't, the polygon is not convex.
     all(∆ϕ .> 0) || throw("v = $v should represent vertices of convex polygon.")
 
-    n = [∆v[2,:] -∆v[1,:]]'  # SMatrix{2,K}; outward normal directions to edges
+    n = [∆v[2,:] -∆v[1,:]]'  # SMat{2,K}; outward normal directions to edges
     n = n ./ hypot.(n[1,:], n[2,:])'  # normalize
 
     return Polygon{K,2K}(v,n)
 end
 
-Polygon(v::AbstractMatrix{<:Real}) = (K = size(v,2); Polygon(SMatrix{2,K}(v)))
+Polygon(v::AbsMatReal) = (K = size(v,2); Polygon(SMat{2,K}(v)))
 
 # Regular polygon
-function Polygon{K}(c::SVector{2,<:Real},
+function Polygon{K}(c::SReal{2},
                     r::Real,  # distance between center and each vertex
                     θ::Real=0.0  # angle from +y-direction towards first vertex
                     ) where {K}
     ∆θ = 2π / K
 
-    θs = π/2 + θ .+ ∆θ .* SVector(ntuple(k->k-1, Val(K)))  # SVector{K}: angles of vertices
-    v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMatrix{2,K}: locations of vertices
+    θs = π/2 + θ .+ ∆θ .* SVec(ntuple(k->k-1, Val(K)))  # SVec{K}: angles of vertices
+    v = c .+ r .* [cos.(θs) sin.(θs)]'  # SMat{2,K}: locations of vertices
 
     return Polygon(v)
 end
 
-Polygon{K}(c::AbstractVector{<:Real},  # [x, y]: center of regular polygon
+Polygon{K}(c::AbsVecReal,  # [x, y]: center of regular polygon
            r::Real,  # radius: distance from center to vertices
            θ::Real=0.0  # angle of first vertex
            ) where {K} =
-   Polygon{K}(SVector{2}(c), r, θ)
+   Polygon{K}(SVec{2}(c), r, θ)
 
 
 Base.:(==)(s1::Polygon, s2::Polygon) = s1.v==s2.v && s1.n==s2.n  # assume sorted v
 Base.isapprox(s1::Polygon, s2::Polygon) = s1.v≈s2.v && s1.n≈s2.n  # assume sorted v
 Base.hash(s::Polygon, h::UInt) = hash(s.v, hash(s.n, hash(:Polygon, h)))
 
-function level(x::SVector{2,<:Real}, s::Polygon)
+function level(x::SReal{2}, s::Polygon)
     c = mean(s.v, dims=Val(2))  # center of mass
 
     d = sum(s.n .* (x .- c), dims=Val(1))
@@ -73,15 +73,15 @@ function level(x::SVector{2,<:Real}, s::Polygon)
     return 1.0 - maximum(d ./ r)
 end
 
-function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
+function surfpt_nearby(x::SReal{2}, s::Polygon{K}) where {K}
     # Calculate the signed distances from x to edge lines.
-    ∆xe = sum(s.n .* (x .- s.v), dims=Val(1))[1,:]  # SVector{K}: values of equations of edge lines
-    abs∆xe = abs.(∆xe)  # SVector{K}
+    ∆xe = sum(s.n .* (x .- s.v), dims=Val(1))[1,:]  # SVec{K}: values of equations of edge lines
+    abs∆xe = abs.(∆xe)  # SVec{K}
 
     # Determine if x is outside of edges, inclusive.
-    sz = abs.((-)(bounds(s)...))  # SVector{2}
-    onbnd = abs∆xe .≤ Base.rtoldefault(Float64) * max(sz.data...)  # SVector{K}
-    isout = (∆xe.>0) .| onbnd  # SVector{K}
+    sz = abs.((-)(bounds(s)...))  # SVec{2}
+    onbnd = abs∆xe .≤ Base.rtoldefault(Float) * max(sz.data...)  # SVec{K}
+    isout = (∆xe.>0) .| onbnd  # SVec{K}
 
     # For x inside the polygon, it is easy to find the closest surface point: we can simply
     # pick the closest edge and find its point closest to x.
@@ -128,7 +128,7 @@ function surfpt_nearby(x::SVector{2,<:Real}, s::Polygon{K}) where {K}
     return surf, nout
 end
 
-translate(s::Polygon, ∆::SVector{2,<:Real}) = (s2 = deepcopy(s); s2.v = s2.v .+ ∆; s2)
+translate(s::Polygon, ∆::SReal{2}) = (s2 = deepcopy(s); s2.v = s2.v .+ ∆; s2)
 
 function bounds(s::Polygon)
     l = minimum(s.v, dims=Val(2))[:,1]

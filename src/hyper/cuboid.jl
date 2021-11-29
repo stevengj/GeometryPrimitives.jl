@@ -13,37 +13,37 @@ export Cuboid
 # spanned by the two cuboid axes.  (Note that the rows of Cuboid.p are not unit normals to
 # the faces, becuase they are not unit vectors.)
 mutable struct Cuboid{N,N²} <: Shape{N,N²}
-    c::SVector{N,Float64}  # center of cuboid
-    r::SVector{N,Float64}  # "radii" (semi-axes) in axis directions
-    p::SMatrix{N,N,Float64,N²}  # projection matrix to cuboid coordinates
+    c::SFloat{N}  # center of cuboid
+    r::SFloat{N}  # "radii" (semi-axes) in axis directions
+    p::S²Float{N,N²}  # projection matrix to cuboid coordinates
     Cuboid{N,N²}(c,r,p) where {N,N²} = new(c,r,p)  # suppress default outer constructor
 end
 
-Cuboid(c::SVector{N,<:Real},
-       s::SVector{N,<:Real},
-       axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I)
+Cuboid(c::SReal{N},
+       s::SReal{N},
+       axes::S²Real{N}=S²Float{N}(I)
        ) where {N} =
     Cuboid{N,N*N}(c, 0.5s, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))))
 
-Cuboid(c::AbstractVector{<:Real},  # center of cuboid
-       s::AbstractVector{<:Real},  # size of cuboid in axis directions
-       axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c))) =  # columns are axes vectors (each being parallel to two sets of faces in 3D)
-    (N = length(c); Cuboid(SVector{N}(c), SVector{N}(s), SMatrix{N,N}(axes)))
+Cuboid(c::AbsVecReal,  # center of cuboid
+       s::AbsVecReal,  # size of cuboid in axis directions
+       axes::AbsMatReal=MatFloat(I,length(c),length(c))) =  # columns are axes vectors (each being parallel to two sets of faces in 3D)
+    (N = length(c); Cuboid(SVec{N}(c), SVec{N}(s), S²Mat{N}(axes)))
 
-Cuboid(d::NTuple{2,AbstractVector{<:Real}}) =  # end points of diagonal
+Cuboid(d::Tuple2{AbsVecReal}) =  # end points of diagonal
     Cuboid((d[1]+d[2])/2, abs.(d[2]-d[1]))
 
 Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p
 Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p
 Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(:Cuboid, h))))
 
-function level(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
+function level(x::SReal{N}, b::Cuboid{N}) where {N}
     d = b.p * (x - b.c)
 
     return 1.0 - maximum(abs.(d) ./ b.r)
 end
 
-function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
+function surfpt_nearby(x::SReal{N}, b::Cuboid{N}) where {N}
     ax = inv(b.p)  # axes: columns are unit vectors
 
     # Below, the rows of n are the unit normals to the faces of the cuboid.  Appropriate
@@ -56,13 +56,13 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     # of n * ax are the scaled version of the diagonal entries of b.p * ax with positive
     # scale factors.
     cosθ = sum(ax.*n', dims=Val(1))[1,:]  # equivalent to diag(n*ax)
-    # cosθ = diag(n*ax)  # faster than SVector(ntuple(i -> ax[:,i]⋅n[i,:], Val(N)))
+    # cosθ = diag(n*ax)  # faster than SVec(ntuple(i -> ax[:,i]⋅n[i,:], Val(N)))
     # @assert all(cosθ .≥ 0)
 
     d = b.p * (x - b.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
     absd = abs.(d)
-    onbnd = abs.(b.r.-absd) .≤ Base.rtoldefault(Float64) .* b.r  # basically b.r .≈ absd but faster
+    onbnd = abs.(b.r.-absd) .≤ Base.rtoldefault(Float) .* b.r  # basically b.r .≈ absd but faster
     isout = (b.r.<absd) .| onbnd
     ∆ = (b.r .- absd) .* cosθ  # entries can be negative
     if count(isout) == 0  # x strictly inside cuboid; ∆ all positive
@@ -87,9 +87,9 @@ function surfpt_nearby(x::SVector{N,<:Real}, b::Cuboid{N}) where {N}
     return x+∆x, nout
 end
 
-signmatrix(b::Cuboid{1}) = SMatrix{1,1}(1)
-signmatrix(b::Cuboid{2}) = SMatrix{2,2}(1,1, -1,1)
-signmatrix(b::Cuboid{3}) = SMatrix{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
+signmatrix(b::Cuboid{1}) = S²Mat{1}(1)
+signmatrix(b::Cuboid{2}) = S²Mat{2}(1,1, -1,1)
+signmatrix(b::Cuboid{3}) = SMat{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
 
 function bounds(b::Cuboid)
     A = inv(b.p) .* b.r'

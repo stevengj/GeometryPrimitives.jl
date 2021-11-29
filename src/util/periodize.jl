@@ -1,9 +1,9 @@
 export periodize
 
-periodize(shp::Shape{N}, A::AbstractMatrix{<:Real}, ∆range::Shape{N}) where {N} = periodize(shp, SMatrix{N,N}(A), ∆range)
+periodize(shp::Shape{N}, A::AbsMatReal, ∆range::Shape{N}) where {N} = periodize(shp, S²Mat{N}(A), ∆range)
 
 function periodize(shp::S,  # shape to periodize
-                   A::SMatrix{N,N,<:Real},  # columns: primitive vectors of Bravais lattice
+                   A::S²Real{N},  # columns: primitive vectors of Bravais lattice
                    ∆range::Shape{N}  # range of translation vectors; boundaries included
 				   ) where {N,S<:Shape{N}}
     # R = n₁a₁ + n₂a₂ + n₃a₃ is a translation vector for A = [a₁ a₂ a₃].  Find the ranges of
@@ -20,20 +20,20 @@ function periodize(shp::S,  # shape to periodize
     # box, all the lattice points within the post-transform parallelpiped are also within
     # the bounding box of the parallelpiped, whose corner indices are the minimum and
     # maximum nᵢ's.
-    ∆bound = bounds(∆range)  # (SVector{3}, SVector{3}): bounds of translation range
-    nmax_fl = SVector(ntuple(k->-Inf, Val(N)))  # [-Inf, -Inf, -Inf] for N = 3
-    nmin_fl = SVector(ntuple(k->Inf, Val(N)))  # [Inf, Inf, Inf] for N = 3
+    ∆bound = bounds(∆range)  # (SVec{3}, SVec{3}): bounds of translation range
+    nmax_fl = SVec(ntuple(k->-Inf, Val(N)))  # [-Inf, -Inf, -Inf] for N = 3
+    nmin_fl = SVec(ntuple(k->Inf, Val(N)))  # [Inf, Inf, Inf] for N = 3
     rcart = CartesianIndices(ntuple(k->2, Val(N)))  # (2,2,2) for N = 3
     for icart = rcart  # icart: CartesianIndex (see, e.g., https://julialang.org/blog/2016/02/iteration)
-        cnr = map((∆b1,∆b2,i)-> i==1 ? ∆b1 : ∆b2, ∆bound[1], ∆bound[2], SVector(icart.I))  # SVector: corner of ∆bound (note icart.I[k] = 1 or 2)
-        n_fl = A \ cnr  # SVector: A * n_fl = corner
-        nmax_fl = max.(nmax_fl, n_fl)  # SVector
-        nmin_fl = min.(nmin_fl, n_fl)  # SVector
+        cnr = map((∆b1,∆b2,i)-> i==1 ? ∆b1 : ∆b2, ∆bound[1], ∆bound[2], SVec(icart.I))  # SVec: corner of ∆bound (note icart.I[k] = 1 or 2)
+        n_fl = A \ cnr  # SVec: A * n_fl = corner
+        nmax_fl = max.(nmax_fl, n_fl)  # SVec
+        nmin_fl = min.(nmin_fl, n_fl)  # SVec
     end
 
     # Find the integral nᵢ's.
-    nmax = ceil.(Int, nmax_fl)  # SVector
-    nmin = floor.(Int, nmin_fl)  # SVector
+    nmax = ceil.(Int, nmax_fl)  # SVec
+    nmin = floor.(Int, nmin_fl)  # SVec
 
     # For nᵢ's within the range calculated above, check if R = n₁a₁ + n₂a₂ + n₃a₃ is within
     # the Shape ∆range.  If it is, then create a shape transformed by R.
@@ -42,7 +42,7 @@ function periodize(shp::S,  # shape to periodize
     ishape = 0
     nrange = map((n1,n2)->n1:n2, nmin.data, nmax.data)  # e.g., (1:10, 1:10, 1:10) for N = 3
     for n = CartesianIndices(nrange)  # n: CartesianIndex
-		∆ = A * SVector(n.I)  # lattice vector R
+		∆ = A * SVec(n.I)  # lattice vector R
 		if ∆ ∈ ∆range
 			shape = translate(shp, ∆)
 			ishape += 1

@@ -6,14 +6,14 @@ authors = ["Steven G. Johnson, Wonseok Shin <wsshin97@gmail.com>, and contributo
 version = "0.3.4"
 
 [deps]
+AbbreviatedTypes = "1766def0-c946-4dda-a59e-d0d07f8410f7"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+AbbreviatedTypes = "^0.1.4"
 Makie = "^0.15.0"
-StaticArrays = "^1.0.0"
 julia = "^1.6"
 
 [extras]

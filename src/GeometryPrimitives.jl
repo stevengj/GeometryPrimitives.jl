@@ -1,5 +1,6 @@
 module GeometryPrimitives
-using StaticArrays, LinearAlgebra
+using AbbreviatedTypes
+using LinearAlgebra
 using Statistics: mean
 using Makie
 
@@ -17,23 +18,23 @@ Base.ndims(o::Shape{N}) where {N} = N
 # Therefore, always call them with return type assertions.  See
 # https://discourse.julialang.org/t/extending-base-in-type-stably/5341/12
 # https://github.com/JuliaLang/julia/issues/23210
-level(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(SVector{N}(x), o)
-Base.in(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = level(x,o) ≥ 0
-surfpt_nearby(x::AbstractVector{<:Real}, o::Shape{N}) where {N} = surfpt_nearby(SVector{N}(x), o)
-normal(x::AbstractVector{<:Real}, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
-translate(s::Shape{N}, ∆::AbstractVector{<:Real}) where {N} = translate(s, SVector{N}(∆))
-translate(s::Shape{N}, ∆::SVector{N,<:Real}) where {N} = (s2 = deepcopy(s); s2.c += ∆; s2)  # default implementation
+level(x::AbsVecReal, o::Shape{N}) where {N} = level(SVec{N}(x), o)
+Base.in(x::AbsVecReal, o::Shape{N}) where {N} = level(x,o) ≥ 0
+surfpt_nearby(x::AbsVecReal, o::Shape{N}) where {N} = surfpt_nearby(SVec{N}(x), o)
+normal(x::AbsVecReal, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
+translate(s::Shape{N}, ∆::AbsVecReal) where {N} = translate(s, SVec{N}(∆))
+translate(s::Shape{N}, ∆::SReal{N}) where {N} = (s2 = deepcopy(s); s2.c += ∆; s2)  # default implementation
 
-function orthoaxes(n::SVector{3,<:Real})
-    u_temp = abs(n[3]) < abs(n[1]) ? SVector(0,0,1) : SVector(1,0,0)
+function orthoaxes(n::SReal{3})
+    u_temp = abs(n[3]) < abs(n[1]) ? SVec(0,0,1) : SVec(1,0,0)
     v = normalize(n × u_temp)
     u = v × n
 
     return u, v
 end
 
-function orthoaxes(n::SVector{N,<:Real}) where {N}
-    u_temp = abs(n[3]) < abs(n[1]) ? SVector(0,0,1) : SVector(1,0,0)
+function orthoaxes(n::SReal{N}) where {N}
+    u_temp = abs(n[3]) < abs(n[1]) ? SVec(0,0,1) : SVec(1,0,0)
     v = normalize(n × u_temp)
     u = v × n
 

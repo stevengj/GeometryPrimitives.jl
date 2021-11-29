@@ -3,7 +3,7 @@
     @test c == deepcopy(c)
     @test hash(c) == hash(deepcopy(c))
     @test [0.2,0.2,1] ∈ c
-    @test SVector(0.2,0.2,1.2) ∉ c
+    @test SVec(0.2,0.2,1.2) ∉ c
     @test [0.2,0.25,1] ∉ c
 
     @test ((x,nout) = surfpt_nearby([0,0,0],c); (x≈[0,0,1.1] && nout≈[0,0,1]) || (x≈[0.3,0,0] && nout≈[1,0,0]) || (x≈[0,0.3,0] && nout≈[0,1,0]))  # handle point at center properly

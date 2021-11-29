@@ -1,8 +1,11 @@
-using GeometryPrimitives, StaticArrays, LinearAlgebra, Test
+using GeometryPrimitives
+using AbbreviatedTypes
+using LinearAlgebra
 using Random: MersenneTwister
 using Statistics: mean
+using Test
 
-const rtol = Base.rtoldefault(Float64)
+const rtol = Base.rtoldefault(Float)
 const one⁻ = 1 - rtol  # scale factor slightly less than 1
 const one⁺ = 1 + rtol  # scare factor slightly greater than 1
 const one⁻⁻, one⁺⁺ = 0.9, 1.1  # (scale factor less than 1, scale factor greater than 1)
@@ -31,8 +34,8 @@ function checkbounds(s::Shape{N}, ntrials=10^4) where {N}
 end
 
 function checktree(t::KDTree{N}, slist::Vector{<:Shape{N}}, ntrials=10^3) where {N}
-    lb = SVector{N}(fill(Inf,N))
-    ub = SVector{N}(fill(-Inf,N))
+    lb = SVec{N}(fill(Inf,N))
+    ub = SVec{N}(fill(-Inf,N))
     for i in eachindex(slist)
         lbi,ubi = bounds(slist[i])
         lb = min.(lb,lbi)

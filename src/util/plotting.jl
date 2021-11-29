@@ -1,4 +1,4 @@
-const EPS_REL = Base.rtoldefault(Float64)  # machine epsilon
+const EPS_REL = Base.rtoldefault(Float)  # machine epsilon
 
 # Define drawshape() and drawshape!() functions.
 # hres and vres are the number of sampling points in the corresponding Cartesion derctions.
@@ -25,7 +25,7 @@ function Makie.plot!(ds::DrawShape{<:Tuple{Shape{2}}})
     res = (hres, vres)
 
     # Makie.convert_arguments() defined below handles this new signature.
-    contour!(ds, shp, res, levels=SVector(0.0); ds.attributes...)
+    contour!(ds, shp, res, levels=SVec(0.0); ds.attributes...)
 
     return ds
 end
@@ -48,13 +48,13 @@ function Makie.plot!(ds::DrawShape{<:Tuple{Shape{3},Tuple{Symbol,Real}}})
     res = (hres, vres)
 
     # Makie.convert_arguments() defined below handles this new signature.
-    contour!(ds, shp, cs, res, levels=SVector(0.0); ds.attributes...)
+    contour!(ds, shp, cs, res, levels=SVec(0.0); ds.attributes...)
 
     return ds
 end
 
 # Define the new signature of contour!() used in drawshape!() for 2D shapes.
-function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple{Integer,Integer})
+function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple2{Integer})
     lower, upper = bounds(shp)
     ∆ = upper - lower
 
@@ -62,7 +62,7 @@ function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple{Integ
     nw = 1; xs = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw])
     nw = 2; ys = range(lower[nw] - ϵrel*∆[nw], upper[nw] + ϵrel*∆[nw], length=res[nw])
 
-    lvs = [level(@SVector([x,y]), shp) for x = xs, y = ys]
+    lvs = [level(SVec(x,y), shp) for x = xs, y = ys]
 
     return convert_arguments(P, xs, ys, lvs)
 end
@@ -70,7 +70,7 @@ end
 # Define the new signature of contour!() used in drawshape!() for 3D shapes.
 function Makie.convert_arguments(P::SurfaceLike, shp::Shape{3},
                                  cs::Tuple{Symbol,Real},  # (:x or :y or :z, intercept): cross section spec
-                                 res::Tuple{Integer,Integer})
+                                 res::Tuple2{Integer})
     ax, cept = cs  # axis normal to cross section, intercept
 
     ax==:x || ax==:y || ax==:z || @error "cs[1] = $(cs[1]) should be :x or :y or :z."
@@ -78,9 +78,9 @@ function Makie.convert_arguments(P::SurfaceLike, shp::Shape{3},
     nu, nv = mod1(nw+1,3), mod1(nw+2,3)
 
     # Set the unit vectors along the u-, v-, w-axes.
-    û = SVector(ntuple(identity,Val(3))) .== nu
-    v̂ = SVector(ntuple(identity,Val(3))) .== nv
-    ŵ = SVector(ntuple(identity,Val(3))) .== nw
+    û = SVec(ntuple(identity,Val(3))) .== nu
+    v̂ = SVec(ntuple(identity,Val(3))) .== nv
+    ŵ = SVec(ntuple(identity,Val(3))) .== nw
 
     lower, upper = bounds(shp)
     ∆ = upper - lower
