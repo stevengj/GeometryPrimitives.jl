@@ -33,38 +33,38 @@ Cuboid(c::AbsVecReal,  # center of cuboid
 Cuboid(d::Tuple2{AbsVecReal}) =  # end points of diagonal
     Cuboid((d[1]+d[2])/2, abs.(d[2]-d[1]))
 
-Base.:(==)(b1::Cuboid, b2::Cuboid) = b1.c==b2.c && b1.r==b2.r && b1.p==b2.p
-Base.isapprox(b1::Cuboid, b2::Cuboid) = b1.c≈b2.c && b1.r≈b2.r && b1.p≈b2.p
-Base.hash(b::Cuboid, h::UInt) = hash(b.c, hash(b.r, hash(b.p, hash(:Cuboid, h))))
+Base.:(==)(s1::Cuboid, s2::Cuboid) = s1.c==s2.c && s1.r==s2.r && s1.p==s2.p
+Base.isapprox(s1::Cuboid, s2::Cuboid) = s1.c≈s2.c && s1.r≈s2.r && s1.p≈s2.p
+Base.hash(s::Cuboid, h::UInt) = hash(s.c, hash(s.r, hash(s.p, hash(:Cuboid, h))))
 
-function level(x::SReal{N}, b::Cuboid{N}) where {N}
-    d = b.p * (x - b.c)
+function level(x::SReal{N}, s::Cuboid{N}) where {N}
+    d = s.p * (x - s.c)
 
-    return 1.0 - maximum(abs.(d) ./ b.r)
+    return 1.0 - maximum(abs.(d) ./ s.r)
 end
 
-function surfpt_nearby(x::SReal{N}, b::Cuboid{N}) where {N}
-    ax = inv(b.p)  # axes: columns are unit vectors
+function surfpt_nearby(x::SReal{N}, s::Cuboid{N}) where {N}
+    ax = inv(s.p)  # axes: columns are unit vectors
 
     # Below, the rows of n are the unit normals to the faces of the cuboid.  Appropriate
     # signs will be multiplied later.  (Note that the signs will be such that the rows of n
     # are always outward directions, even if x is inside the cuboid.)
-    n = (b.p ./ sqrt.(sum(abs2,b.p,dims=Val(2))[:,1]))  # b.p normalized in row direction
+    n = (s.p ./ sqrt.(sum(abs2,s.p,dims=Val(2))[:,1]))  # s.p normalized in row direction
 
     # Below, θ[i], the angle between ax[:,i] and n[i,:], is always acute (i.e, cosθ .≥ 0),
-    # because the diagonal entries of b.p * ax are positive (= 1) and the diagonal entries
-    # of n * ax are the scaled version of the diagonal entries of b.p * ax with positive
+    # because the diagonal entries of s.p * ax are positive (= 1) and the diagonal entries
+    # of n * ax are the scaled version of the diagonal entries of s.p * ax with positive
     # scale factors.
     cosθ = sum(ax.*n', dims=Val(1))[1,:]  # equivalent to diag(n*ax)
     # cosθ = diag(n*ax)  # faster than SVec(ntuple(i -> ax[:,i]⋅n[i,:], Val(N)))
     # @assert all(cosθ .≥ 0)
 
-    d = b.p * (x - b.c)
+    d = s.p * (x - s.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
     absd = abs.(d)
-    onbnd = abs.(b.r.-absd) .≤ Base.rtoldefault(Float) .* b.r  # basically b.r .≈ absd but faster
-    isout = (b.r.<absd) .| onbnd
-    ∆ = (b.r .- absd) .* cosθ  # entries can be negative
+    onbnd = abs.(s.r.-absd) .≤ Base.rtoldefault(Float) .* s.r  # basically s.r .≈ absd but faster
+    isout = (s.r.<absd) .| onbnd
+    ∆ = (s.r .- absd) .* cosθ  # entries can be negative
     if count(isout) == 0  # x strictly inside cuboid; ∆ all positive
         l∆x, i = findmin(∆)  # find closest face
         nout = n[i,:]
@@ -87,12 +87,12 @@ function surfpt_nearby(x::SReal{N}, b::Cuboid{N}) where {N}
     return x+∆x, nout
 end
 
-signmatrix(b::Cuboid{1}) = S²Mat{1}(1)
-signmatrix(b::Cuboid{2}) = S²Mat{2}(1,1, -1,1)
-signmatrix(b::Cuboid{3}) = SMat{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
+signmatrix(::Cuboid{1}) = S²Mat{1}(1)
+signmatrix(::Cuboid{2}) = S²Mat{2}(1,1, -1,1)
+signmatrix(::Cuboid{3}) = SMat{3,4}(1,1,1, -1,1,1, 1,-1,1, 1,1,-1)
 
-function bounds(b::Cuboid)
-    A = inv(b.p) .* b.r'
-    m = maximum(abs.(A * signmatrix(b)), dims=Val(2))[:,1] # extrema of all 2^N corners of the cuboid
-    return (b.c-m,b.c+m)
+function bounds(s::Cuboid)
+    A = inv(s.p) .* s.r'
+    m = maximum(abs.(A * signmatrix(s)), dims=Val(2))[:,1] # extrema of all 2^N corners of the cuboid
+    return (s.c-m,s.c+m)
 end

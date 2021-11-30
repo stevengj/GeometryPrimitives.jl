@@ -12,16 +12,16 @@ const Shape1 = Shape{1,1}
 const Shape2 = Shape{2,4}
 const Shape3 = Shape{3,9}
 
-Base.ndims(o::Shape{N}) where {N} = N
+Base.ndims(::Shape{N}) where {N} = N
 
 # The following functions return Any due to the limitations of Julia's dispatch system.
 # Therefore, always call them with return type assertions.  See
 # https://discourse.julialang.org/t/extending-base-in-type-stably/5341/12
 # https://github.com/JuliaLang/julia/issues/23210
-level(x::AbsVecReal, o::Shape{N}) where {N} = level(SVec{N}(x), o)
-Base.in(x::AbsVecReal, o::Shape{N}) where {N} = level(x,o) ≥ 0
-surfpt_nearby(x::AbsVecReal, o::Shape{N}) where {N} = surfpt_nearby(SVec{N}(x), o)
-normal(x::AbsVecReal, o::Shape) = surfpt_nearby(x, o)[2]  # outward direction even for x inside o
+level(x::AbsVecReal, s::Shape{N}) where {N} = level(SVec{N}(x), s)
+Base.in(x::AbsVecReal, s::Shape{N}) where {N} = level(x,s) ≥ 0
+surfpt_nearby(x::AbsVecReal, s::Shape{N}) where {N} = surfpt_nearby(SVec{N}(x), s)
+normal(x::AbsVecReal, s::Shape) = surfpt_nearby(x, s)[2]  # outward direction even for x inside s
 translate(s::Shape{N}, ∆::AbsVecReal) where {N} = translate(s, SVec{N}(∆))
 translate(s::Shape{N}, ∆::SReal{N}) where {N} = (s2 = deepcopy(s); s2.c += ∆; s2)  # default implementation
 
