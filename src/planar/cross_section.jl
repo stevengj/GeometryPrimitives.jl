@@ -43,5 +43,8 @@ translate(s::CrossSection, ∆::SReal{2}) = CrossSection(translate(s.shp, coord3
 # be implemented for CrossSection{S} for each S<:Shape3.
 function bounds(s::CrossSection)
     bₙ, bₚ = bounds(s.shp)
-    return s.p * bₙ, s.p * bₚ
+    pbₙ = s.p * bₙ
+    pbₚ = s.p * bₚ
+
+    return min.(pbₙ,pbₚ), max.(pbₙ,pbₚ)
 end
