@@ -63,7 +63,7 @@ function level(x::SReal{3}, s::Prism)
 end
 
 function surfpt_nearby(x::SReal{3}, s::Prism)
-    ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
+    ax = s.p'  # prism axes: columns are not only unit vectors, but also orthogonal
 
     y = s.p * (x - s.c)  # x in prism coordinates
     ya = y[3]  # scalar: coordinate in axis dimension
@@ -100,7 +100,7 @@ function surfpt_nearby(x::SReal{3}, s::Prism)
 end
 
 function bounds(s::Prism)
-    ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
+    ax = s.p'  # prism axes: columns are not only unit vectors, but also orthogonal
     a = ax[:,3]  # SVec{3}
     h2a = s.h2 * a
 

@@ -24,7 +24,7 @@ SectoralPrism(c::AbsVecReal,  # center of prism
     SectoralPrism(SVec{3}(c), r, ϕ, ∆ϕ, h, SVec{3}(a))
 
 function bounds_ctrcut(s::SectoralPrism)
-    ax = inv(s.p)  # prism axes: columns are not only unit vectors, but also orthogonal
+    ax = s.p'  # prism axes: columns are not only unit vectors, but also orthogonal
     if ax ≈ I  # prism axes are aligned with Cartesian directions (this covers most usage)
         l, u = bounds(s.b)  # (SVec{2}, SVec{2})
         a₁₂ = ax[:,SVec(1,2)]  # SMat{3,2}

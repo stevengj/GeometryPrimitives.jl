@@ -21,7 +21,7 @@ PolygonalPrism(c::AbsVecReal,  # center of prism
 
 # Return the bounds of the center cut with respect to the prism center.
 function bounds_ctrcut(s::PolygonalPrism{K}) where {K}
-    p = inv(s.p)  # projection matrix to prism coordinates: rows are not only unit vectors, but also orthogonal
+    p = s.p'  # projection matrix to prism coordinates: rows are not only unit vectors, but also orthogonal
     v = [s.b.v; @SMatrix(zeros(1,K))]  # SMat{3,K}: 3D vectices in prism axis coordinates
     w = p * v  # SMat{3,K}: vertices in external coordinates
 
