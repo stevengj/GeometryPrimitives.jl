@@ -2,7 +2,7 @@ export Sector
 
 #= Sector (for a base shape) =#
 
-mutable struct Sector <: Shape{2,4}  # M = 2K
+mutable struct Sector <: Shape2  # M = 2K
     c::SFloat{2}  # center of circle
     r::Float  # radius of circle
     ϕ₀::Float  # center angle bisecting sector: -π ≤ ϕ₀ < π  (π excluded)

@@ -6,10 +6,10 @@
 # demand is high.
 
 # It is possible to combine Cylinder and Prism by defining a more general prism type that
-# accepts any base shape.  We could use Shape{2} to create a 2D base shape and store it as
+# accepts any base shape.  We could use Shape2 to create a 2D base shape and store it as
 # a base shape.  However there is one problem.  We want to use
 #
-#   surfpt_nearby(x_base::SVec{2}, shape_base::Shape{2})
+#   surfpt_nearby(x_base::SVec{2}, shape_base::Shape2)
 #
 # to find the closest point in the base dimension (such a point is on the side of the prism),
 # and compare the distance to it with the distance from x to the base plane along the axis
@@ -32,7 +32,7 @@
 
 export Prism
 
-mutable struct Prism{B<:Shape{2}} <: Shape{3,9}
+mutable struct Prism{B<:Shape2} <: Shape3
     c::SFloat{3}  # prism center
     b::B  # base shape described in prism coordinates (i.e, when translating prism, do not need to translate b)
     h2::Float  # height * 0.5
@@ -44,10 +44,10 @@ Prism(c::SReal{3},
       b::B,
       h::Real=Inf,
       axes::S²Real{3,9}=S²Float{3,9}(I)  # columns are axes vectors: first two columns span prism base, and last column is prism axis
-      ) where {B<:Shape{2}} =
+      ) where {B<:Shape2} =
     Prism{B}(c, b, 0.5h, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))))
 
-Prism(c::AbsVecReal, b::Shape{2}, h::Real=Inf, axes::AbsMatReal=MatFloat(I,length(c),length(c))) =
+Prism(c::AbsVecReal, b::Shape2, h::Real=Inf, axes::AbsMatReal=MatFloat(I,length(c),length(c))) =
     Prism(SVec{3}(c), b, h, S²Mat{3}(axes))
 
 Base.:(==)(s1::Prism, s2::Prism) = s1.c==s2.c && s1.b==s2.b && s1.h2==s2.h2 && s1.p==s2.p

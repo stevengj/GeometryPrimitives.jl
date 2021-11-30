@@ -5,7 +5,7 @@ export Polygon
 # Assume the followings for the polygon represented by Polygon:
 # - The polygon is convex.
 # - The vertices are listed in the counter-clockwise order around the origin.
-mutable struct Polygon{K,K2} <: Shape{2,4}  # K2 = 2K
+mutable struct Polygon{K,K2} <: Shape2  # K2 = 2K
     v::SMat{2,K,Float,K2}  # vertices
     n::SMat{2,K,Float,K2}  # direction normals to edges
     Polygon{K,K2}(v,n) where {K,K2} = new(v,n)  # suppress default outer constructor

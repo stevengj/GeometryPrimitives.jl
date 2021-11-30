@@ -9,7 +9,7 @@ const EPS_REL = Base.rtoldefault(Float)  # machine epsilon
 end
 
 # Implement drawshape!() for 2D shapes.
-function Makie.plot!(ds::DrawShape{<:Tuple{Shape{2}}})
+function Makie.plot!(ds::DrawShape{<:Tuple{Shape2}})
     res₀ = ds.res.val  # fields found by examining typeof(ds) and fieldnames(typeof(ds)), etc
     hres = ds.hres.val
     vres = ds.vres.val
@@ -31,7 +31,7 @@ function Makie.plot!(ds::DrawShape{<:Tuple{Shape{2}}})
 end
 
 # Implement drawshape!() for 3D shapes.
-function Makie.plot!(ds::DrawShape{<:Tuple{Shape{3},Tuple{Symbol,Real}}})
+function Makie.plot!(ds::DrawShape{<:Tuple{Shape3,Tuple{Symbol,Real}}})
     res₀ = ds.res.val  # fields found by examining typeof(ds) and fieldnames(typeof(ds)), etc
     hres = ds.hres.val
     vres = ds.vres.val
@@ -54,7 +54,7 @@ function Makie.plot!(ds::DrawShape{<:Tuple{Shape{3},Tuple{Symbol,Real}}})
 end
 
 # Define the new signature of contour!() used in drawshape!() for 2D shapes.
-function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple2{Integer})
+function Makie.convert_arguments(P::SurfaceLike, shp::Shape2, res::Tuple2{Integer})
     lower, upper = bounds(shp)
     ∆ = upper - lower
 
@@ -68,7 +68,7 @@ function Makie.convert_arguments(P::SurfaceLike, shp::Shape{2}, res::Tuple2{Inte
 end
 
 # Define the new signature of contour!() used in drawshape!() for 3D shapes.
-function Makie.convert_arguments(P::SurfaceLike, shp::Shape{3},
+function Makie.convert_arguments(P::SurfaceLike, shp::Shape3,
                                  cs::Tuple{Symbol,Real},  # (:x or :y or :z, intercept): cross section spec
                                  res::Tuple2{Integer})
     ax, cept = cs  # axis normal to cross section, intercept
