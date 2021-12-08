@@ -13,7 +13,7 @@
 
     ∆ = rand(2)
     s2 = translate(s, ∆)
-    @test all(([r,0], [-r,0], [0,r], [0,-r], [0,0]) .+ Ref(∆) .∈ Ref(s2))
+    @test all(([r*one⁻,0], [-r*one⁻,0], [0,r*one⁻], [0,-r*one⁻], [0,0]) .+ Ref(∆) .∈ Ref(s2))
     @test !any(([r*one⁺,0], [-r*one⁺,0], [0,r*one⁺], [0,-r*one⁺]) .+ Ref(∆) .∈ Ref(s2))
 
 end  # @testset "CrossSection, ball"

@@ -62,7 +62,7 @@ function surfpt_nearby(x::SReal{N}, s::Cuboid{N}) where {N}
     d = s.p * (x - s.c)
     n = n .* copysign.(1.0,d)  # operation returns SMatrix (reason for leaving n untransposed)
     absd = abs.(d)
-    onbnd = abs.(s.r.-absd) .≤ Base.rtoldefault(Float) .* s.r  # basically s.r .≈ absd but faster
+    onbnd = abs.(s.r.-absd) .≤ τᵣ₀ .* s.r  # basically s.r .≈ absd but faster
     isout = (s.r.<absd) .| onbnd
     ∆ = (s.r .- absd) .* cosθ  # entries can be negative
     if count(isout) == 0  # x strictly inside cuboid; ∆ all positive

@@ -1,4 +1,4 @@
-const EPS_REL = Base.rtoldefault(Float)  # machine epsilon
+const EPS_REL = τᵣ₀  # machine epsilon
 
 # Define drawshape() and drawshape!() functions.
 # hres and vres are the number of sampling points in the corresponding Cartesion derctions.

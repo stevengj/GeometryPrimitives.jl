@@ -12,7 +12,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-AbbreviatedTypes = "^0.1.4"
+AbbreviatedTypes = "^0.2.1"
 Makie = "^0.15.0"
 julia = "^1.7"
 

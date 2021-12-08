@@ -41,7 +41,7 @@ function surfpt_nearby(x::SReal{2}, s::Sector)
     # Calculate the closest point in the ρ dimension and outward normal direciton there.
     r2 = s.r / 2
     ρ = ld - r2  # positive if closer to arc; negative if closer to center
-    d̂ = ld ≤ Base.rtoldefault(Float) * r2  ? SVec(cos(s.ϕ₀),sin(s.ϕ₀)) : normalize(d)
+    d̂ = ld ≤ τᵣ₀ * r2  ? SVec(cos(s.ϕ₀),sin(s.ϕ₀)) : normalize(d)
 
     surfρ = ρ<0 ? 0.0 : s.r  # scalar: closest point to x between center and perimeter point
     noutρ = copysign(1.0,ρ) * d̂  # SVec{2}: outward direction normal at surfρ
@@ -49,7 +49,7 @@ function surfpt_nearby(x::SReal{2}, s::Sector)
     absρ = abs(ρ)
     abs∆ρ = abs(r2 - absρ)  # radial distance between x and either center or perimeter, whichever closer to x
 
-    onbndρ = abs∆ρ ≤ Base.rtoldefault(Float) * r2  # basically r2 ≈ ρ but faster
+    onbndρ = abs∆ρ ≤ τᵣ₀ * r2  # basically r2 ≈ ρ but faster
     isoutρ = (r2 < absρ) || onbndρ
 
     # Calculate the closest point in the ϕ dimension and outward normal direciton there.
@@ -67,7 +67,7 @@ function surfpt_nearby(x::SReal{2}, s::Sector)
     absϕ = abs(ϕ)
     abs∆ϕ = abs(s.∆ϕ2 - absϕ)  # angular distance between x and closer side of sector
 
-    onbndϕ = abs∆ϕ ≤ Base.rtoldefault(Float) * s.∆ϕ2  # basically ∆ϕ2 ≈ ϕ but faster
+    onbndϕ = abs∆ϕ ≤ τᵣ₀ * s.∆ϕ2  # basically ∆ϕ2 ≈ ϕ but faster
     isoutϕ = (s.∆ϕ2 < absϕ) || onbndϕ
 
     # Pick the surface point and outward direction normal depending on the location of x.

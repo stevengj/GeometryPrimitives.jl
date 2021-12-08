@@ -73,7 +73,7 @@ function surfpt_nearby(x::SReal{3}, s::Prism)
     abs∆a = abs(s.h2 - la)  # scalar: distance between x and base point closest to x
     surfa = SVec(yb.data..., copysign(s.h2, ya))  # SVec{3}: coordinates of base point closest to x
     nouta = SVec(0.0, 0.0, copysign(1.0, ya))  # SVec{3}: outward direction normal at surfa
-    onbnda = abs∆a ≤ Base.rtoldefault(Float) * s.h2
+    onbnda = abs∆a ≤ τᵣ₀ * s.h2
     isouta = s.h2<la || onbnda
 
     surfb2, noutb2 = surfpt_nearby(yb, s.b)  # (SVec{2}, SVec{2}): side point closest to x and outward direction normal to side there
@@ -81,7 +81,7 @@ function surfpt_nearby(x::SReal{3}, s::Prism)
     surfb = SVec(surfb2.data..., ya)  # SVec{3}: coordinates of side point closest to x
     noutb = SVec(noutb2.data..., 0.0)  # SVec{3}: outward direction normal to side surface at surfb
     basesize = abs.((-)(bounds(s.b)...))  # SVec{2}: size of bounding rectancle of base
-    onbndb = abs∆b ≤ Base.rtoldefault(Float) * max(basesize.data...)
+    onbndb = abs∆b ≤ τᵣ₀ * max(basesize.data...)
     isoutb = yb∉s.b || onbndb
 
     if isouta && isoutb  # x outside in both axis and base dimensions
