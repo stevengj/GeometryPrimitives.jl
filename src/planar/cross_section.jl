@@ -23,21 +23,19 @@ function (shp::Shape3)(ax::Symbol, c::Real)
     return CrossSection(shp, n̂, c)
 end
 
+Base.:(==)(s1::CrossSection, s2::CrossSection) = s1.shp==s2.shp && s1.p==s2.p  && s1.c==s2.c
+Base.isapprox(s1::CrossSection, s2::CrossSection) = s1.shp≈s2.shp && s1.p≈s2.p  && s1.c≈s2.c
+Base.hash(s::CrossSection, h::UInt) = hash(s.shp, hash(s.p, hash(s.c, hash(:CrossSection, h))))
+
 coord3d(x::SReal{2}, s::CrossSection) = (y = SFloat{3}(x.data..., s.c); s.p' * y)
 
 level(x::SReal{2}, s::CrossSection) = level(coord3d(x,s), s.shp)
 
 function surfpt_nearby(x::SReal{2}, s::CrossSection)
-    pt, nout = surfpt_nearby(coord3d(x,s), s.shp)
-
-    uv = SVec(1,2)
-    pt2 = (s.p * pt)[uv]
-    nout2 = normalize((s.p * nout)[uv])
-
-    return pt2, nout2
+    @error "surfpt_nearby(x,s) is not supported for s::CrossSection."
 end
 
-translate(s::CrossSection, ∆::SReal{2}) = CrossSection(translate(s.shp, coord3d(∆)), s.p, s.c)
+translate(s::CrossSection, ∆::SReal{2}) = CrossSection(translate(s.shp, coord3d(∆,s)), s.p, s.c)
 
 # This does not create the tightest bounds.  For the tightest bounds, this function should
 # be implemented for CrossSection{S} for each S<:Shape3.

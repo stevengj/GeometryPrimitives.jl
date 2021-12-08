@@ -55,6 +55,7 @@ end
 include("ball.jl")
 include("cuboid.jl")
 include("ellipsoid.jl")
+include("cross_section.jl")
 include("polygon.jl")
 include("sector.jl")
 include("cylinder.jl")
@@ -64,4 +65,4 @@ include("kdtree.jl")
 include("periodize.jl")
 include("vxlcut.jl")
 
-end
+end  # @testset "GeometryPrimitives"
