@@ -6,7 +6,7 @@
     @test [0.3,-2.5] ∉ b
 
     @test ((x,nout) = surfpt_nearby([0,0],b); (x≈[1,0] && nout≈[1,0]) || (x≈[0,2] && nout≈[0,1]))  # handle point at center properly
-    @test all([(p = [1sx,2sy]; surfpt_nearby(1.1p,b) == (p, normalize(1.1p-p))) for sx = (-1,1), sy = (-1,1)])  # outside corners
+    @test all([(p = [1sx,2sy]; surfpt_nearby(1.1p,b) ≈ (p, normalize(1.1p-p))) for sx = (-1,1), sy = (-1,1)])  # outside corners
     @test all([((x, nout) = surfpt_nearby([1sx,2sy],b); x≈[1sx,2sy] && all([sx 0; 0 sy]*nout.≥0) && norm(nout)≈1) for sx = (-1,1), sy = (-1,1)])  # at corners
     @test all([surfpt_nearby([ρ*1sx,1sy],b) == ([1sx,1sy], [sx,0]) for ρ = (one⁻⁻,1,one⁺⁺), sx = (-1,1), sy = (-1,0,1)])  # around faces
     @test all([surfpt_nearby([0.5sx,ρ*2sy],b) == ([0.5sx,2sy], [0,sy]) for ρ = (one⁻⁻,1,one⁺⁺), sx = (-1,0,1), sy = (-1,1)])  # around faces
