@@ -80,7 +80,7 @@ function surfpt_nearby(x::SReal{2}, s::Polygon{K}) where {K}
 
     # Determine if x is outside of edges, inclusive.
     sz = abs.((-)(bounds(s)...))  # SVec{2}
-    onbnd = abs∆xe .≤ τᵣ₀ * max(sz.data...)  # SVec{K}
+    onbnd = abs∆xe .≤ τᵣ₀ * maximum(sz)  # SVec{K}
     isout = (∆xe.>0) .| onbnd  # SVec{K}
 
     # For x inside the polygon, it is easy to find the closest surface point: we can simply

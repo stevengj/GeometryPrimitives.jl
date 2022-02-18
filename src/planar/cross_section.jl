@@ -27,7 +27,7 @@ Base.:(==)(s1::CrossSection, s2::CrossSection) = s1.shp==s2.shp && s1.p==s2.p  &
 Base.isapprox(s1::CrossSection, s2::CrossSection) = s1.shp≈s2.shp && s1.p≈s2.p  && s1.c≈s2.c
 Base.hash(s::CrossSection, h::UInt) = hash(s.shp, hash(s.p, hash(s.c, hash(:CrossSection, h))))
 
-coord3d(x::SReal{2}, s::CrossSection) = (y = SFloat{3}(x.data..., s.c); s.p' * y)
+coord3d(x::SReal{2}, s::CrossSection) = (y = SFloat{3}(x..., s.c); s.p' * y)
 
 level(x::SReal{2}, s::CrossSection) = level(coord3d(x,s), s.shp)
 
