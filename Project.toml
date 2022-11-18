@@ -3,7 +3,7 @@ uuid = "17051e67-205e-509e-8301-03b320b998e6"
 license = "MIT"
 desc = "geometric primitives for piecewise functions on grids"
 authors = ["Steven G. Johnson, Wonseok Shin <wsshin97@gmail.com>, and contributors"]
-version = "0.4.4"
+version = "0.4.5"
 
 [deps]
 AbbreviatedTypes = "1766def0-c946-4dda-a59e-d0d07f8410f7"
