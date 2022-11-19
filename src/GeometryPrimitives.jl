@@ -1,5 +1,5 @@
 module GeometryPrimitives
-using AbbreviatedTypes
+using AbbreviatedTypes; @define_types_with(Float64)
 using LinearAlgebra
 using Statistics: mean
 using Makie
