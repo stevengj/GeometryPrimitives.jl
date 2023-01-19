@@ -21,7 +21,7 @@ mutable struct KDTree{K,S<:Shape{K}}
     x::Float
     left::KDTree{K,S}  # shapes ≤ x in coordinate ix
     right::KDTree{K,S} # shapes > x in coordinate ix
-    KDTree{K,S}(s::AbsVec{S}) where {K,S<:Shape{K}} = new(s, collect(1:size(s)[1]), 0)
+    KDTree{K,S}(s::AbsVec{S}) where {K,S<:Shape{K}} = new(s, collect(eachindex(s)), 0)
     KDTree{K,S}(s::AbsVec{S},s_index::Vector{<:Int}) where {K,S<:Shape{K}} = new(s, s_index, 0)
     function KDTree{K,S}(ix::Integer, x::Real, left::KDTree{K,S}, right::KDTree{K,S}) where {K,S<:Shape{K}}
         1 ≤ ix ≤ K || throw(BoundsError())
@@ -44,7 +44,7 @@ take precedence over shapes that appear later.
 function KDTree(s::AbsVec{S}) where {K,S<:Shape{K}}
     # If no list of indicies is provided, simply enumerate by the number of
     # shapes in `s`.
-    return KDTree(s,collect(1:size(s)[1]))
+    return KDTree(s,collect(eachindex(s)))
 end
 
 function KDTree(s::AbsVec{S}, s_index::Vector{<:Int}) where {K,S<:Shape{K}}
