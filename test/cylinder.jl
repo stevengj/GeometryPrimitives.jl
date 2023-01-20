@@ -3,7 +3,7 @@
     @test c == deepcopy(c)
     @test hash(c) == hash(deepcopy(c))
     @test [0.2,0.2,1] ∈ c
-    @test SVec(0.2,0.2,1.2) ∉ c
+    @test GeometryPrimitives.SVec(0.2,0.2,1.2) ∉ c
     @test [0.2,0.25,1] ∉ c
 
     @test ((x,nout) = surfpt_nearby([0,0,0],c); (x≈[0,0,1.1] && nout≈[0,0,1]) || (x≈[0.3,0,0] && nout≈[1,0,0]) || (x≈[0,0.3,0] && nout≈[0,1,0]))  # handle point at center properly
@@ -11,9 +11,9 @@
     @test all([(p = [0.3sx/√2,0.3sy/√2,1.1sz]; surfpt_nearby(1.1p,c) ≈ (p, normalize(1.1p-p))) for sx = (-1,1), sy = (-1,1), sz = (-1,1)])  # outside corners
     @test all([(p = [0.3sx,0,1.1sz]; surfpt_nearby(1.1p,c) ≈ (p, normalize(1.1p-p))) for sx = (-1,1), sz = (-1,1)])  # outside corners
     @test all([(p = [0,0.3sy,1.1sz]; surfpt_nearby(1.1p,c) ≈ (p, normalize(1.1p-p))) for sy = (-1,1), sz = (-1,1)])  # outside corners
-    @test all([(p = [0.3sx/√2,0.3sy/√2,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([sx 0 0; 0 sy 0; 0 0 sz]*nout.≥-10τₐ₀))) for sx = (-1,1), sy = (-1,1), sz = (-1,1)])  # on rims
-    @test all([(p = [0.3sx,0,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([sx 0 0; 0 0 sz]*nout.≥-10τₐ₀))) for sx = (-1,1), sz = (-1,1)])  # on rims
-    @test all([(p = [0,0.3sy,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([0 sy 0; 0 0 sz]*nout.≥-10τₐ₀))) for sy = (-1,1), sz = (-1,1)])  # on rims
+    @test all([(p = [0.3sx/√2,0.3sy/√2,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([sx 0 0; 0 sy 0; 0 0 sz]*nout.≥-10GeometryPrimitives.τₐ₀))) for sx = (-1,1), sy = (-1,1), sz = (-1,1)])  # on rims
+    @test all([(p = [0.3sx,0,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([sx 0 0; 0 0 sz]*nout.≥-10GeometryPrimitives.τₐ₀))) for sx = (-1,1), sz = (-1,1)])  # on rims
+    @test all([(p = [0,0.3sy,1.1sz]; (x,nout) = surfpt_nearby(p,c); (x≈p && all([0 sy 0; 0 0 sz]*nout.≥-10GeometryPrimitives.τₐ₀))) for sy = (-1,1), sz = (-1,1)])  # on rims
     @test all([(p = [0.3sx/√2/2,0.3sy/√2/2,1.1sz]; surfpt_nearby([p[1],p[2],ρ*p[3]],c) ≈ (p,[0,0,sz])) for ρ = (one⁻⁻,1,one⁺⁺), sx = (-1,0,1), sy = (-1,0,1), sz = (-1,1)])  # around bases
     @test all([(p = [0.3sx,0,1.1sz/2]; surfpt_nearby([ρ*p[1],p[2],p[3]],c) ≈ (p,[sx,0,0])) for ρ = (one⁻⁻,1,one⁺⁺), sx = (-1,1), sz = (-1,0,1)])  # around side
     @test all([(p = [0,0.3sy,1.1sz/2]; surfpt_nearby([p[1],ρ*p[2],p[3]],c) ≈ (p,[0,sy,0])) for ρ = (one⁻⁻,1,one⁺⁺), sy = (-1,1), sz = (-1,0,1)])  # around side
@@ -42,9 +42,9 @@ end  # @testset "Cylinder"
     @test all([(p = 0.3(s1*ax1+s2*ax2)/√2+1.1s3*ax3; surfpt_nearby(1.1p,cr) ≈ (p, normalize(1.1p-p))) for s1 = (-1,1), s2 = (-1,1), s3 = (-1,1)])  # outside corners
     @test all([(p = 0.3s1*ax1+1.1s3*ax3; surfpt_nearby(1.1p,cr) ≈ (p, normalize(1.1p-p))) for s1 = (-1,1), s3 = (-1,1)])  # outside corners
     @test all([(p = 0.3s2*ax2+1.1s3*ax3; surfpt_nearby(1.1p,cr) ≈ (p, normalize(1.1p-p))) for s2 = (-1,1), s3 = (-1,1)])  # outside corners
-    @test all([(p = 0.3(s1*ax1+s2*ax2)/√2+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s1*ax1 s2*ax2 s3*ax3]'*nout.≥-10τₐ₀) && norm(nout)≈1)) for s1 = (-1,1), s2 = (-1,1), s3 = (-1,1)])  # on rims
-    @test all([(p = 0.3s1*ax1+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s1*ax1 s3*ax3]'*nout.≥-10τₐ₀) && norm(nout)≈1)) for s1 = (-1,1), s3 = (-1,1)])  # on rims
-    @test all([(p = 0.3s2*ax2+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s2*ax2 s3*ax3]'*nout.≥-10τₐ₀) && norm(nout)≈1)) for s2 = (-1,1), s3 = (-1,1)])  # on rims
+    @test all([(p = 0.3(s1*ax1+s2*ax2)/√2+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s1*ax1 s2*ax2 s3*ax3]'*nout.≥-10GeometryPrimitives.τₐ₀) && norm(nout)≈1)) for s1 = (-1,1), s2 = (-1,1), s3 = (-1,1)])  # on rims
+    @test all([(p = 0.3s1*ax1+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s1*ax1 s3*ax3]'*nout.≥-10GeometryPrimitives.τₐ₀) && norm(nout)≈1)) for s1 = (-1,1), s3 = (-1,1)])  # on rims
+    @test all([(p = 0.3s2*ax2+1.1s3*ax3; (x,nout) = surfpt_nearby(p,cr); (x≈p && all([s2*ax2 s3*ax3]'*nout.≥-10GeometryPrimitives.τₐ₀) && norm(nout)≈1)) for s2 = (-1,1), s3 = (-1,1)])  # on rims
     @test all([surfpt_nearby(0.3(s1*ax1+s2*ax2)/√2/2+ρ*1.1s3*ax3,cr) ≈ (0.3(s1*ax1+s2*ax2)/√2/2+1.1s3*ax3,s3*ax3) for ρ = (one⁻⁻,1,one⁺⁺), s1 = (-1,0,1), s2 = (-1,0,1), s3 = (-1,1)])  # around bases
     @test all([surfpt_nearby(ρ*0.3s1*ax1+1.1s3*ax3/2,cr) ≈ (0.3s1*ax1+1.1s3*ax3/2, s1*ax1) for ρ = (one⁻⁻,1,one⁺⁺), s1 = (-1,1), s3 = (-1,0,1)])  # around side
     @test all([surfpt_nearby(ρ*0.3s2*ax2+1.1s3*ax3/2,cr) ≈ (0.3s2*ax2+1.1s3*ax3/2, s2*ax2) for ρ = (one⁻⁻,1,one⁺⁺), s2 = (-1,1), s3 = (-1,0,1)])  # around side

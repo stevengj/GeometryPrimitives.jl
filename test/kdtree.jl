@@ -11,8 +11,8 @@
     @test findfirst([10.1,1], kd) == nothing
     @test checktree(kd, s)
 
-    s = Shape3[Ball(SVec(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
+    s = Shape3[Ball(GeometryPrimitives.SVec(randn(rng),randn(rng),randn(rng)), 0.01) for i=1:100]
     @test checktree(KDTree(s), s)
-    s = Shape3[Ball(SVec(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
+    s = Shape3[Ball(GeometryPrimitives.SVec(randn(rng),randn(rng),randn(rng)), 0.1) for i=1:100]
     @test checktree(KDTree(s), s)
 end
