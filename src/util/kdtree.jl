@@ -47,7 +47,7 @@ function KDTree(s::AbsVec{S}) where {K,S<:Shape{K}}
     return KDTree(s,collect(eachindex(s)))
 end
 
-function KDTree(s::AbsVec{S}, s_index::Vector{<:Int}) where {K,S<:Shape{K}}
+function KDTree(s::AbsVec{S}, s_index::AbstractVector{<:Integer}) where {K,S<:Shape{K}}
     (length(s) ≤ 4 || K == 0) && return KDTree{K,S}(s, s_index)
 
     # figure out the best dimension ix to divide over,
