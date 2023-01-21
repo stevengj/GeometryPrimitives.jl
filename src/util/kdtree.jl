@@ -17,10 +17,10 @@ not shapes of nonzero size.)
 mutable struct KDTree{K,S<:Shape{K}}
     s::Vector{S}
     ix::Int
-    x::Float
+    x::Float64
     left::KDTree{K,S}  # shapes ≤ x in coordinate ix
     right::KDTree{K,S} # shapes > x in coordinate ix
-    KDTree{K,S}(s::AbsVec{S}) where {K,S<:Shape{K}} = new(s, 0)
+    KDTree{K,S}(s::AbstractVector{S}) where {K,S<:Shape{K}} = new(s, 0)
     function KDTree{K,S}(ix::Integer, x::Real, left::KDTree{K,S}, right::KDTree{K,S}) where {K,S<:Shape{K}}
         1 ≤ ix ≤ K || throw(BoundsError())
         new(S[], ix, x, left, right)
@@ -30,7 +30,7 @@ end
 Base.ndims(::KDTree{K}) where {K} = K
 
 """
-    KDTree(s::AbsVec{<:Shape{K}})
+    KDTree(s::AbstractVector{<:Shape{K}})
 
 Construct a K-D tree (`KDTree`) representation of a list of
 `shapes` in order to enable rapid searching of an shape list.
@@ -38,7 +38,7 @@ Construct a K-D tree (`KDTree`) representation of a list of
 When searching the tree, shapes that appear earlier in `s`
 take precedence over shapes that appear later.
 """
-function KDTree(s::AbsVec{S}) where {K,S<:Shape{K}}
+function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
     (length(s) ≤ 4 || K == 0) && return KDTree{K,S}(s)
 
     # figure out the best dimension ix to divide over,
@@ -100,7 +100,7 @@ function Base.show(io::IO, ::MIME"text/plain", kd::KDTree)
     _show(io, kd, 0)
 end
 
-function Base.findfirst(p::SVec{N}, s::Vector{S}) where {N,S<:Shape{N}}
+function Base.findfirst(p::SVector{N}, s::Vector{S}) where {N,S<:Shape{N}}
     for i in eachindex(s)
         b = bounds(s[i])
         if all(b[1] .< p .< b[2]) && p ∈ s[i]  # check if p is within bounding box is faster
@@ -110,7 +110,7 @@ function Base.findfirst(p::SVec{N}, s::Vector{S}) where {N,S<:Shape{N}}
     return nothing
 end
 
-function Base.findfirst(p::SVec{N}, kd::KDTree{N}) where {N}
+function Base.findfirst(p::SVector{N}, kd::KDTree{N}) where {N}
     if isempty(kd.s)
         if p[kd.ix] ≤ kd.x
             return findfirst(p, kd.left)
@@ -127,5 +127,5 @@ end
 
 Return the first shape in `kd` that contains the point `p`; return `nothing` otherwise.
 """
-Base.findfirst(p::AbsVecReal, kd::KDTree{N}) where {N} = findfirst(SVec{N}(p), kd)
-Base.findfirst(p::AbsVecReal, s::Vector{<:Shape{N}}) where {N} = findfirst(SVec{N}(p), s)
+Base.findfirst(p::AbstractVector{<:Real}, kd::KDTree{N}) where {N} = findfirst(SVector{N}(p), kd)
+Base.findfirst(p::AbstractVector{<:Real}, s::Vector{<:Shape{N}}) where {N} = findfirst(SVector{N}(p), s)
