@@ -35,8 +35,8 @@ function bounds_ctrcut(s::SectoralPrism)
         r = b.r
 
         el = Ellipsoid(SVector(0.0,0.0,0.0), SVector(r,r,0.0), ax)  # center is set at origin to return bounds with respect to prism center
-        bp = boundpts(el)  # S²Mat{3}: boundary points; all three columns of b are free of NaN because no column of ax is aligned with Cartesian directions
-        bp′ = s.p * bp  # S²Mat{3}: bp in prism coordinates
+        bp = boundpts(el)  # SMatrix{3,3}: boundary points; all three columns of b are free of NaN because no column of ax is aligned with Cartesian directions
+        bp′ = s.p * bp  # SMatrix{3,3}: bp in prism coordinates
         bp2′ = bp′[SVector(1,2),:]  # SMatrix{2,3}: in each column of bp′, third entry is in axis dimension, so must be zero mathematically
 
         ϕ = atan.(bp2′[2,:], bp2′[1,:])  # SVector{3}: angles of boundary points in base plane
