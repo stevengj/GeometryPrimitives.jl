@@ -1,22 +1,22 @@
 export Ellipsoid
 
 mutable struct Ellipsoid{N,N²} <: Shape{N,N²}
-    c::SFloat{N}  # center of ellipsoid
-    ri2::SFloat{N}  # inverse squares of "radii" (semi-axes) in axis directions
-    p::S²Float{N,N²}  # projection matrix to Ellipsoid coordinates; must be orthonormal (see surfpt_nearby)
+    c::SVector{N,Float64}  # center of ellipsoid
+    ri2::SVector{N,Float64}  # inverse squares of "radii" (semi-axes) in axis directions
+    p::SMatrix{N,N,Float64,N²}  # projection matrix to Ellipsoid coordinates; must be orthonormal (see surfpt_nearby)
     Ellipsoid{N,N²}(c,ri2,p) where {N,N²} = new(c,ri2,p)  # suppress default outer constructor
 end
 
-Ellipsoid(c::SReal{N},
-          r::SReal{N},
-          axes::S²Real{N}=S²Float{N}(I)
+Ellipsoid(c::SVector{N,<:Real},
+          r::SVector{N,<:Real},
+          axes::SMatrix{N,N,<:Real}=SMatrix{N,N,Float64}(I)
           ) where {N} =
     Ellipsoid{N,N*N}(c, float.(r).^-2, inv(axes ./ sqrt.(sum(abs2,axes,dims=Val(1)))))
 
-Ellipsoid(c::AbsVecReal,  # center of ellipsoid
-          r::AbsVecReal,  # ""
-          axes::AbsMatReal=MatFloat(I,length(c),length(c))) =  # columns are axes vector; assumed orthogonal
-    (N = length(c); Ellipsoid(SVec{N}(c), SVec{N}(r), S²Mat{N}(axes)))
+Ellipsoid(c::AbstractVector{<:Real},  # center of ellipsoid
+          r::AbstractVector{<:Real},  # ""
+          axes::AbstractMatrix{<:Real}=Matrix{Float64}(I,length(c),length(c))) =  # columns are axes vector; assumed orthogonal
+    (N = length(c); Ellipsoid(SVector{N}(c), SVector{N}(r), SMatrix{N,N}(axes)))
 
 Ellipsoid(s::Cuboid{N,N²}) where {N,N²} = Ellipsoid{N,N²}(s.c, (s.r).^-2, s.p)
 
@@ -24,9 +24,9 @@ Base.:(==)(s1::Ellipsoid, s2::Ellipsoid) = s1.c==s2.c && s1.ri2==s2.ri2 && s1.p=
 Base.isapprox(s1::Ellipsoid, s2::Ellipsoid) = s1.c≈s2.c && s1.ri2≈s2.ri2 && s1.p≈s2.p
 Base.hash(s::Ellipsoid, h::UInt) = hash(s.c, hash(s.ri2, hash(s.p, hash(:Ellipsoid, h))))
 
-level(x::SReal{N}, s::Ellipsoid{N}) where {N} = 1.0 - √dot((s.p * (x - s.c)).^2, s.ri2)
+level(x::SVector{N,<:Real}, s::Ellipsoid{N}) where {N} = 1.0 - √dot((s.p * (x - s.c)).^2, s.ri2)
 
-function surfpt_nearby(x::SReal{N}, s::Ellipsoid{N}) where {N}
+function surfpt_nearby(x::SVector{N,<:Real}, s::Ellipsoid{N}) where {N}
     if x == s.c
         _m, i = findmax(s.ri2)
         nout = s.p[i,:]  # assume s.p is orthogonal
