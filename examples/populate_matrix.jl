@@ -36,9 +36,10 @@ function populate_matrix()
     y = range(-sy/2,stop=sy/2,length=Ny)
     for ix = 1:Nx, iy = 1:Ny
         p = [x[ix], y[iy], 0.0] # current point on grid
-        a = findfirst(p,geometry) # search through geometry tree
-        if isnothing(a)
-            a = 1.0 # default material
+        idx = findfirst(p,geometry) # search through geometry tree
+        a = 1.0 # default material
+        if !isnothing(idx)
+            a = geometry[idx].ε
         end
         M[ix,iy] = a # fill in matrix
     end
