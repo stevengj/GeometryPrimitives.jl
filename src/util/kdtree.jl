@@ -16,14 +16,16 @@ not shapes of nonzero size.)
 """
 mutable struct KDTree{K,S<:Shape{K}}
     s::Vector{S}
+    s_index::Vector{Int}
     ix::Int
     x::Float64
     left::KDTree{K,S}  # shapes ≤ x in coordinate ix
     right::KDTree{K,S} # shapes > x in coordinate ix
-    KDTree{K,S}(s::AbstractVector{S}) where {K,S<:Shape{K}} = new(s, 0)
+    KDTree{K,S}(s::AbstractVector{S}) where {K,S<:Shape{K}} = new(s, collect(eachindex(s)), 0)
+    KDTree{K,S}(s::AbstractVector{S},s_index::Vector{<:Int}) where {K,S<:Shape{K}} = new(s, s_index, 0)
     function KDTree{K,S}(ix::Integer, x::Real, left::KDTree{K,S}, right::KDTree{K,S}) where {K,S<:Shape{K}}
         1 ≤ ix ≤ K || throw(BoundsError())
-        new(S[], ix, x, left, right)
+        new(S[], Int[], ix, x, left, right)
     end
 end
 
@@ -38,8 +40,15 @@ Construct a K-D tree (`KDTree`) representation of a list of
 When searching the tree, shapes that appear earlier in `s`
 take precedence over shapes that appear later.
 """
+
 function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
-    (length(s) ≤ 4 || K == 0) && return KDTree{K,S}(s)
+    # If no list of indicies is provided, simply enumerate by the number of
+    # shapes in `s`.
+    return KDTree(s,collect(eachindex(s)))
+end
+
+function KDTree(s::AbstractVector{S}, s_index::AbstractVector{<:Integer}) where {K,S<:Shape{K}}
+    (length(s) ≤ 4 || K == 0) && return KDTree{K,S}(s, s_index)
 
     # figure out the best dimension ix to divide over,
     # the dividing plane x, and the number (nl,nr) of
@@ -61,22 +70,26 @@ function KDTree(s::AbstractVector{S}) where {K,S<:Shape{K}}
     end
 
     # don't bother subdividing if it doesn't reduce the # of shapes much
-    4*max(nl,nr) > 3*length(s) && return KDTree{K,S}(s)
+    4*max(nl,nr) > 3*length(s) && return KDTree{K,S}(s,s_index)
 
     # create the arrays of shapes in each subtree
     sl = Vector{S}(undef, nl)
+    sl_idx = Vector{Int}(undef, nl)
     sr = Vector{S}(undef, nr)
+    sr_idx = Vector{Int}(undef, nr)
     il = ir = 0
     for k in eachindex(s)
         if b[k][1][ix] ≤ x
             sl[il += 1] = s[k]
+            sl_idx[il] = s_index[k]
         end
         if b[k][2][ix] > x
             sr[ir += 1] = s[k]
+            sr_idx[ir] = s_index[k]
         end
     end
 
-    return KDTree{K,S}(ix, x, KDTree(sl), KDTree(sr))
+    return KDTree{K,S}(ix, x, KDTree(sl,sl_idx), KDTree(sr,sr_idx))
 end
 
 depth(kd::KDTree) = kd.ix == 0 ? 0 : max(depth(kd.left), depth(kd.right)) + 1
@@ -104,7 +117,7 @@ function Base.findfirst(p::SVector{N}, s::Vector{S}) where {N,S<:Shape{N}}
     for i in eachindex(s)
         b = bounds(s[i])
         if all(b[1] .< p .< b[2]) && p ∈ s[i]  # check if p is within bounding box is faster
-            return s[i]
+            return i
         end
     end
     return nothing
@@ -118,7 +131,12 @@ function Base.findfirst(p::SVector{N}, kd::KDTree{N}) where {N}
             return findfirst(p, kd.right)
         end
     else
-        return findfirst(p, kd.s)
+        idx = findfirst(p, kd.s)
+        if isnothing(idx)
+            return idx
+        else
+            return kd.s_index[idx]
+        end
     end
 end
 
