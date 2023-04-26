@@ -11,13 +11,14 @@ stackup, we would need to carefully determine what the foreground and background
 materials are within each voxel (there could be more than 2 materials, in which
 case there's no clear convention).
 """
+
 using GeometryPrimitives
-using CairoMakie
+using Makie
 using StaticArrays
 
 function populate_matrix()
     # set up geometry
-    geometry = [Cylinder([2.0, -2.0, 0.0], 1.0, 100.0)]
+    geometry = [Cylinder([2.0, -3.0, 0.0], 1.0, 100.0)]
 
     # arbitrary material parameters
     low = 1.0
@@ -47,7 +48,7 @@ function populate_matrix()
         # compute the fill fraction
         fill_fraction = volfrac(vxl, nearby[2], nearby[1])
         # linearly interpolate based on the fill fraction
-        M[ix, iy] = low_index + (fill_fraction) * (high_index - low_index)
+        M[ix, iy] = low + (fill_fraction) * (high - low)
     end
 
     return M
