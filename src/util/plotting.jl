@@ -29,7 +29,7 @@ function Makie.plot!(ds::DrawShape{<:Tuple{Shape2}})
 end
 
 # Define the new signature of contour!() used in drawshape!() for 2D shapes.
-function Makie.convert_arguments(P::SurfaceLike, shp::Shape2, res::NTuple{2,Integer})
+function Makie.convert_arguments(P::GridBased, shp::Shape2, res::NTuple{2,Integer})
     lower, upper = bounds(shp)
     ∆ = upper - lower
 
